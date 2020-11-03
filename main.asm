@@ -165,18 +165,20 @@ WndProc endp
 
 loadGameImages proc
 	; 加载开始界面的位图
-	invoke LoadBitmap, hInstance, 500
+
+    ; 加载游戏界面的位图
+	invoke LoadBitmap, hInstance, 501
 	mov h_gamepage, eax
+
+	; 加载玩家1的位图
+	invoke LoadBitmap, hInstance, 502
+	mov player1_bitmap, eax
+
 	ret
 loadGameImages endp
 
 ; 一个线程函数，根据场景的状态不断循环，游戏状态时候，不断进行碰撞判断等等
 logicThread proc p:DWORD
-	LOCAL area:RECT
-	
-	.WHILE 1
-		invoke Sleep, 30
-	.ENDW
 	ret
 logicThread endp
 
@@ -211,6 +213,13 @@ updateScene proc uses eax
 	;绘制背景
 	invoke paintBackground, member_hdc, member_hdc2
 
+    ;绘制砖块
+
+    ;绘制人物
+	invoke paintPlayers, member_hdc, member_hdc2
+
+    ;绘制分数
+
 	; BitBlt（hDestDC, x, y, nWidth, nheight, hSrcDC, xSrc, ySrc, dwRop）
 	; 将源矩形区域直接拷贝到目标区域：SRCCOPY
 	invoke BitBlt, hdc, 0, 0, my_window_width, my_window_height, member_hdc, 0, 0, SRCCOPY
@@ -228,7 +237,40 @@ paintBackground proc  member_hdc1:HDC, member_hdc2:HDC
 		invoke SelectObject, member_hdc2,  h_gamepage
 		invoke BitBlt, member_hdc1, 0, 0, my_window_width, my_window_height, member_hdc2, 0, 0, SRCCOPY
 	;.ENDIF
+
 	ret
 paintBackground endp
+
+; 游戏主角绘制函数
+paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
+	
+	; player 1-----------------------------------------------
+	; 也许需要根据方向选择合适的bitmap,或者考虑对一张图如何实现旋转
+	invoke SelectObject, member_hdc2, player1_bitmap
+
+	; 如果在运动：改变帧
+	;.IF player1.is_static == 0
+	;	inc player1.frame_counter
+	;	.IF player1.frame_counter > 20
+	;		mov player1.frame_counter, 0
+	;		.IF player1.cur_frame == 1
+	;			mov player1.cur_frame, 2
+	;		.ELSEIF player1.cur_frame == 2
+	;			mov player1.cur_frame, 1
+	;		.ENDIF
+	;	.ENDIF
+	;.ENDIF
+
+	; 带透明像素的位图，
+	; 先判断方向，再判断状态
+	; 上方向
+	
+	
+	invoke TransparentBlt, member_hdc1, player1.pos.x, player1.pos.y,\
+			player1.psize.x, player1.psize.y, member_hdc2, 0, 0, 40, 40, 16777215
+	
+	ret
+paintPlayers endp
+
 
 end start

@@ -1,30 +1,30 @@
 ;     include files
 ;     ~~~~~~~~~~~~~
-      include C:\masm32\INCLUDE\windows.inc
-      include C:\masm32\INCLUDE\masm32.inc
-      include C:\masm32\INCLUDE\gdi32.inc
-      include C:\masm32\INCLUDE\user32.inc
-      include C:\masm32\INCLUDE\kernel32.inc
-      include C:\masm32\INCLUDE\Comctl32.inc
-      include C:\masm32\INCLUDE\comdlg32.inc
-      include C:\masm32\INCLUDE\shell32.inc
-      include C:\masm32\INCLUDE\oleaut32.inc
-      include C:\masm32\INCLUDE\msvcrt.inc
-	  include C:\masm32\INCLUDE\msimg32.inc
-      include C:\masm32\macros\macros.asm
+      include \masm32\INCLUDE\windows.inc
+      include \masm32\INCLUDE\masm32.inc
+      include \masm32\INCLUDE\gdi32.inc
+      include \masm32\INCLUDE\user32.inc
+      include \masm32\INCLUDE\kernel32.inc
+      include \masm32\INCLUDE\Comctl32.inc
+      include \masm32\INCLUDE\comdlg32.inc
+      include \masm32\INCLUDE\shell32.inc
+      include \masm32\INCLUDE\oleaut32.inc
+      include \masm32\INCLUDE\msvcrt.inc
+	  include \masm32\INCLUDE\msimg32.inc
+      include \masm32\macros\macros.asm
 
 ;     libraries
 ;     ~~~~~~~~~
-      includelib C:\masm32\LIB\masm32.lib
-      includelib C:\masm32\LIB\gdi32.lib
-      includelib C:\masm32\LIB\user32.lib
-      includelib C:\masm32\LIB\kernel32.lib
-      includelib C:\masm32\LIB\Comctl32.lib
-      includelib C:\masm32\LIB\comdlg32.lib
-      includelib C:\masm32\LIB\shell32.lib
-      includelib C:\masm32\LIB\oleaut32.lib
-      includelib C:\masm32\LIB\msvcrt.lib
-	  includelib C:\masm32\LIB\msimg32.lib
+      includelib \masm32\LIB\masm32.lib
+      includelib \masm32\LIB\gdi32.lib
+      includelib \masm32\LIB\user32.lib
+      includelib \masm32\LIB\kernel32.lib
+      includelib \masm32\LIB\Comctl32.lib
+      includelib \masm32\LIB\comdlg32.lib
+      includelib \masm32\LIB\shell32.lib
+      includelib \masm32\LIB\oleaut32.lib
+      includelib \masm32\LIB\msvcrt.lib
+	  includelib \masm32\LIB\msimg32.lib
 
       ; -----------------
       ; Local prototypes
@@ -70,8 +70,8 @@ ball ends
 
 ; 游戏中常量
 .const
-	my_window_width  EQU   1200       ; 窗体水平宽度
-	my_window_height EQU   840        ; 窗体竖直高度
+	my_window_width  EQU   600       ; 窗体水平宽度
+	my_window_height EQU   1000       ; 窗体竖直高度
 
 	dir_top          EQU   8          ; 我们正常见到的上下左右
 	dir_down         EQU   4
@@ -101,6 +101,9 @@ ball ends
 
 	h_startpage      DWORD    0          ; 开始界面
 	h_gamepage       DWORD    0          ; 游戏界面
+	
+	
+	
 	h_winpage1       DWORD    0          ; 玩家1胜利界面
 	h_winpage2       DWORD    0          ; 玩家2胜利界面
 	h_guidepage      DWORD    0          ; 指南页面
@@ -112,7 +115,8 @@ ball ends
 	score_bitmap     DWORD    0          ; 分数位图
 
 
-	player1          player <<400, 420>, <42, 77>,<0,0>,0,1,0,1,1,0>                     ; 玩家1
+	
+	player1          player <<280, 0>, <40, 40>,<0,0>,0,1,0,1,1,0>                     ; 玩家1
 	player2          player <<760, 420>, <42, 77>,<0,0>,0,2,0,1,1,0>                     ; 玩家2
 	soccer           ball   <<575, 440>, <50, 50>,25,<0.0,0.0>,<0,0>,0,1,1,0>            ; 球
 	paintstruct      PAINTSTRUCT <>   ; 绘制结构体
@@ -143,19 +147,21 @@ ball ends
         MsgLoop          PROTO
         Main             PROTO
 		loadGameImages   PROTO
-		isColliding      PROTO :DWORD
 		paintBackground  PROTO :DWORD,:DWORD
+		updateScene      PROTO
+		logicThread      PROTO :DWORD
+		paintThread      PROTO :DWORD
 		paintPlayers     PROTO :DWORD,:DWORD
+
+
+		isColliding      PROTO :DWORD
 		paintBall        PROTO :DWORD,:DWORD
 		paintScore       PROTO :DWORD,:DWORD
-		updateScene      PROTO
 		movePlayer       PROTO :DWORD
 		moveBall		 PROTO
 		changePlayerPos  PROTO :DWORD,:DWORD
 		returnPlayerPos  PROTO :DWORD
 		getScore         PROTO
-		logicThread      PROTO :DWORD
-		paintThread      PROTO :DWORD
 		gameOver         PROTO 
 		resetGame        PROTO
 		processKeyUp     PROTO :DWORD
