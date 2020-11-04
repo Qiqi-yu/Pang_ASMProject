@@ -7,7 +7,9 @@
     option casemap :none        ; case sensitive
 
     bColor   equ  <00999999h>   ; client area brush colour
-    include game.inc      ; local includes for this file
+    include	game.inc      ; local includes for this file
+	;include Irvine32.inc
+	
 
 .code
 start:  ;程序入口点
@@ -174,11 +176,45 @@ loadGameImages proc
 	invoke LoadBitmap, hInstance, 502
 	mov player1_bitmap, eax
 
+	; 加载砖块的位图
+	invoke LoadBitmap, hInstance, 503
+	mov brick_bitmap, eax
+
 	ret
 loadGameImages endp
 
 ; 一个线程函数，根据场景的状态不断循环，游戏状态时候，不断进行碰撞判断等等
 logicThread proc p:DWORD
+	;LOCAL area:RECT
+	; 开始界面，可以用户手动进入指南界面，或者到时间自动进入
+	.WHILE game_status == 0
+		;invoke Sleep, 1000
+		mov game_status, 2
+		invoke initialBricks
+	.ENDW
+
+	game:
+
+	; 指南界面
+	.WHILE game_status == 1
+		invoke Sleep, 30
+	.ENDW
+
+	; 游戏界面
+	.WHILE game_status == 2
+		invoke Sleep, 30
+		;invoke moveBricks
+		; 移动砖块
+		;invoke movePlayer, addr player1
+	.ENDW
+
+	; 胜利界面
+	;.WHILE game_status == 3 || game_status == 4
+	;	invoke Sleep, 30
+	;.ENDW
+
+	jmp game
+	
 	ret
 logicThread endp
 
@@ -190,6 +226,27 @@ paintThread proc p:DWORD
 	.ENDW
 	ret
 paintThread endp
+
+initialBricks proc uses esi edx ecx eax ebx
+	;invoke    randomize
+	mov	   ecx, lengthof bricks
+	mov	   esi, offset bricks
+L1:
+	    ;pushad
+		mov		eax, 0
+		;invoke  randomrange
+		;popad
+		; 这个地方没有随机qwq
+		push	ecx
+		mov		dx, 0
+		mov		cx, 7
+		div		cx
+		mov		[esi], dx
+		add		esi, TYPE bricks
+		pop		ecx
+		loop	L1
+	ret
+initialBricks endp
 
 ; 场景更新函数
 updateScene proc uses eax
@@ -214,6 +271,7 @@ updateScene proc uses eax
 	invoke paintBackground, member_hdc, member_hdc2
 
     ;绘制砖块
+	invoke paintBricks, member_hdc, member_hdc2
 
     ;绘制人物
 	invoke paintPlayers, member_hdc, member_hdc2
@@ -233,44 +291,48 @@ updateScene endp
 
 ; 背景图片绘制函数
 paintBackground proc  member_hdc1:HDC, member_hdc2:HDC
-	;.IF game_status == 0
+	.IF game_status == 2
 		invoke SelectObject, member_hdc2,  h_gamepage
 		invoke BitBlt, member_hdc1, 0, 0, my_window_width, my_window_height, member_hdc2, 0, 0, SRCCOPY
-	;.ENDIF
+	.ENDIF
 
 	ret
 paintBackground endp
 
 ; 游戏主角绘制函数
 paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
-	
-	; player 1-----------------------------------------------
-	; 也许需要根据方向选择合适的bitmap,或者考虑对一张图如何实现旋转
 	invoke SelectObject, member_hdc2, player1_bitmap
 
-	; 如果在运动：改变帧
-	;.IF player1.is_static == 0
-	;	inc player1.frame_counter
-	;	.IF player1.frame_counter > 20
-	;		mov player1.frame_counter, 0
-	;		.IF player1.cur_frame == 1
-	;			mov player1.cur_frame, 2
-	;		.ELSEIF player1.cur_frame == 2
-	;			mov player1.cur_frame, 1
-	;		.ENDIF
-	;	.ENDIF
-	;.ENDIF
-
-	; 带透明像素的位图，
-	; 先判断方向，再判断状态
-	; 上方向
-	
-	
 	invoke TransparentBlt, member_hdc1, player1.pos.x, player1.pos.y,\
 			player1.psize.x, player1.psize.y, member_hdc2, 0, 0, 40, 40, 16777215
 	
 	ret
 paintPlayers endp
 
+; 砖块绘制函数
+paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC 
+	LOCAL  brick_x :DWORD
+	LOCAL  brick_y :DWORD
+
+	mov	   ecx, lengthof bricks
+	mov    edi, offset bricks
+	mov	   esi, 50
+	sub    esi, game_counter
+L2:
+		mov ebx, [edi]  ; 乘数 砖块的列数
+		mov eax, brick_gap  ; 被乘数  75
+		mul ebx
+		mov	brick_x, eax
+		mov brick_y, esi
+		pushad
+		invoke SelectObject, member_hdc2, brick_bitmap
+		invoke TransparentBlt, member_hdc1, brick_x, brick_y,\
+			brick_width, brick_height, member_hdc2, 0, 0, 150, 30, 16777215
+		popad
+		add esi, 80
+		add edi, TYPE bricks
+		loop L2
+	ret
+paintBricks endp
 
 end start
