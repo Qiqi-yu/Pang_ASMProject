@@ -51,6 +51,7 @@ player struct
 	dir           BYTE  0     ; 方向,lower four bits  0000 up down left right,两个相反方向后一个不起作用
 	bmp_dir       BYTE  0     ; 位图的方向，4个bit中只能同时有1位为1，取决于运动时哪个键先被按下
 	score         DWORD 0     ; 玩家得分，起初为0，最多为3
+	is_y_collide  BYTE  0     ; y方向是否碰撞（在砖块上）
 	is_static     BYTE  0     ; 是否处于静止状态
 	cur_frame     BYTE  0     ; 处于运动状态时，当前帧数，取值为1或2
 	frame_counter BYTE  0     ; 累计变量，每次加到5就更新运动帧，并把该变量清零
@@ -124,7 +125,7 @@ ball ends
 
 
 	
-	player1          player <<280, 0>, <40, 40>,<0,0>,0,1,0,1,1,0>                     ; 玩家1
+	player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,0,1,1,0>                     ; 玩家1
 	bricks			 DWORD 	  11 DUP(0)   ; 图内最多有11行砖块，记录每行砖块所在列数（从0到6）
 
 	player2          player <<760, 420>, <42, 77>,<0,0>,0,2,0,1,1,0>                     ; 玩家2

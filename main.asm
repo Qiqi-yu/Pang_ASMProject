@@ -205,7 +205,10 @@ logicThread proc p:DWORD
 		invoke Sleep, 30
 		;invoke moveBricks
 		; 移动砖块
-		;invoke movePlayer, addr player1
+	 
+		invoke movePlayer, addr player1
+	 
+
 	.ENDW
 
 	; 胜利界面
@@ -217,6 +220,26 @@ logicThread proc p:DWORD
 	
 	ret
 logicThread endp
+
+
+movePlayer proc uses eax ebx, addrPlayer1:DWORD
+	assume eax: PTR player
+	mov eax,addrPlayer1
+
+	.IF [eax].is_y_collide == 0
+	mov [eax].speed.y,8
+	.ELSE
+    mov [eax].speed.y,0
+	.ENDIF
+
+	mov ebx,[eax].speed.y
+	add [eax].pos.y,ebx
+
+	ret
+
+movePlayer endp
+
+
 
 ; 不断进行绘制流程
 paintThread proc p:DWORD
@@ -303,11 +326,14 @@ paintBackground endp
 paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
 	invoke SelectObject, member_hdc2, player1_bitmap
 
-	invoke TransparentBlt, member_hdc1, player1.pos.x, player1.pos.y,\
+	invoke TransparentBlt, member_hdc1,player1.pos.x,player1.pos.y,\
 			player1.psize.x, player1.psize.y, member_hdc2, 0, 0, 40, 40, 16777215
 	
 	ret
 paintPlayers endp
+
+
+
 
 ; 砖块绘制函数
 paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC 
