@@ -203,7 +203,7 @@ logicThread proc p:DWORD
 
 	; ÓÎÏ·½çÃæ
 	.WHILE game_status == 2
-		invoke Sleep, 30 
+		invoke Sleep, 50
 		inc game_counter
 		.IF game_counter >= 80
 			invoke changeBricks
@@ -236,13 +236,22 @@ movePlayer proc uses eax ebx, addrPlayer1:DWORD
 	mov eax,addrPlayer1
 
 	.IF [eax].is_y_collide == 0
-	mov [eax].speed.y,6
-	.ELSE
-    mov [eax].speed.y,0
-	.ENDIF
-
+	add [eax].speed.y,1
+	;fld [eax].speed.y
+	;fadd gravity
+	;fstp [eax].speed.y
+	;fadd [eax].speed.y,0.03
 	mov ebx,[eax].speed.y
 	add [eax].pos.y,ebx
+	
+	.ELSE
+	;fldz
+	;fstp [eax].speed.y
+    ;mov [eax].speed.y,0.0
+	mov [eax].speed.y,0
+	dec [eax].pos.y
+	.ENDIF
+
 	mov ebx,[eax].speed.x
 	add [eax].pos.x,ebx
 

@@ -38,16 +38,24 @@ point struct
 	y SDWORD 0
 point ends
 
+
 coef  struct
 	x real4 0.0
 	y real4 0.0
 coef  ends
+ 
+COMMENT !
+playerSpeed struct
+	x SDWORD 0
+	y real4 0.0
+playerSpeed ends
+!
 
 ; 玩家结构体
 player struct
 	pos           point <>    ; 玩家的窗口坐标位置
 	psize         point <>    ; 玩家的形状，长度和宽度，方向改变时，这个变量会变
-	speed         point <>    ; 玩家的x,y速度 x速度向左为正，y速度向下为正
+	speed         point<>    ; 玩家的x,y速度 x速度向左为正，y速度向下为正
 	dir           BYTE  0     ; 方向,lower four bits  0000 up down left right,两个相反方向后一个不起作用
 	bmp_dir       BYTE  0     ; 位图的方向，4个bit中只能同时有1位为1，取决于运动时哪个键先被按下
 	score         DWORD 0     ; 玩家得分，起初为0，最多为3
@@ -104,7 +112,7 @@ ball ends
 	door_down_y      EQU   582
 	door_left_x      EQU   180        ; 左边球框入口x
 	door_right_x     EQU   1010		  ; 右边球框入口x
-
+	  
 
 
 	; initialized data allocation
@@ -122,10 +130,10 @@ ball ends
 	player2_bitmap   DWORD    0          ; 玩家2的精灵图
 	ball_bitmap      DWORD    0          ; 球的位图
 	score_bitmap     DWORD    0          ; 分数位图
-
+	;gravity		     REAL4   0.03  
 
 	
-	player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,0,1,1,0>                     ; 玩家1
+	player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
 	bricks			 DWORD 	  11 DUP(0)   ; 图内最多有11行砖块，记录每行砖块所在列数（从0到6）
 
 	player2          player <<760, 420>, <42, 77>,<0,0>,0,2,0,1,1,1,0>                     ; 玩家2
