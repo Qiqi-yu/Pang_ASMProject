@@ -186,7 +186,6 @@ loadGameImages endp
 
 ; 一个线程函数，根据场景的状态不断循环，游戏状态时候，不断进行碰撞判断等等
 logicThread proc p:DWORD
-	;LOCAL area:RECT
 	; 开始界面，可以用户手动进入指南界面，或者到时间自动进入
 	.WHILE game_status == 0
 		;invoke Sleep, 1000

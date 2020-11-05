@@ -51,13 +51,6 @@ box struct
 	right SDWORD 0
 box ends
 
-COMMENT !
-playerSpeed struct
-	x SDWORD 0
-	y real4 0.0
-playerSpeed ends
-!
-
 ; 玩家结构体
 player struct
 	pos           point <>    ; 玩家的窗口坐标位置
