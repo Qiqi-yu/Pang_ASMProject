@@ -1,5 +1,6 @@
 ;     include files
-;     ~~~~~~~~~~~~~
+;     
+	  
       include windows.inc
       include masm32.inc
       include gdi32.inc
@@ -11,7 +12,7 @@
       include oleaut32.inc
       include msvcrt.inc
 	  include msimg32.inc
-      include C:\masm32\macros\macros.asm 
+      include C:\masm32\macros\macros.asm
 
 ;     libraries
 ;     ~~~~~~~~~
@@ -38,12 +39,11 @@ point struct
 	y SDWORD 0
 point ends
 
-
 coef  struct
 	x real4 0.0
 	y real4 0.0
 coef  ends
- 
+
 COMMENT !
 playerSpeed struct
 	x SDWORD 0
@@ -55,7 +55,7 @@ playerSpeed ends
 player struct
 	pos           point <>    ; 玩家的窗口坐标位置
 	psize         point <>    ; 玩家的形状，长度和宽度，方向改变时，这个变量会变
-	speed         point<>    ; 玩家的x,y速度 x速度向左为正，y速度向下为正
+	speed         point <>    ; 玩家的x,y速度 x速度向左为正，y速度向下为正
 	dir           BYTE  0     ; 方向,lower four bits  0000 up down left right,两个相反方向后一个不起作用
 	bmp_dir       BYTE  0     ; 位图的方向，4个bit中只能同时有1位为1，取决于运动时哪个键先被按下
 	score         DWORD 0     ; 玩家得分，起初为0，最多为3
@@ -64,6 +64,15 @@ player struct
 	cur_frame     BYTE  0     ; 处于运动状态时，当前帧数，取值为1或2
 	frame_counter BYTE  0     ; 累计变量，每次加到5就更新运动帧，并把该变量清零
 player ends
+
+; 砖块类
+brick struct
+	pos_left_top		point    <>  ; 左上角位置
+	pos_right_top		point    <>  ; 右上角位置
+	pos_left_bottom		point    <>  ; 左下角位置
+	pos_right_bottom	point    <>  ; 右下角位置
+	brick_type          DWORD    0   ; 砖块类型
+brick ends
 
 ; 足球类
 ball struct
@@ -78,20 +87,14 @@ ball struct
 	frame_counter BYTE     0   ; 球的帧数累加变量，每次加到7就换一帧
 ball ends
 
-; 砖块结构体
-;brick struct
-;	row			  BYTE     0   ; 砖块的行数，从上至下从0开始数
-;	col			  BYTE     0   ; 砖块的列数，从左至右，取值范围为0 1 2 3 4 5 6
-;brick ends
-
 ; 游戏中常量
 .const
 	my_window_width  EQU   600       ; 窗体水平宽度
 	my_window_height EQU   800       ; 窗体竖直高度
-
 	brick_width		 EQU   150       ; 砖块水平宽度
 	brick_height	 EQU   30        ; 砖块竖直高度
-	brick_gap		 EQU   75
+	brick_x_gap		 EQU   75
+	brick_y_gap		 EQU   80
 
 	dir_top          EQU   8          ; 我们正常见到的上下左右
 	dir_down         EQU   4
@@ -112,7 +115,7 @@ ball ends
 	door_down_y      EQU   582
 	door_left_x      EQU   180        ; 左边球框入口x
 	door_right_x     EQU   1010		  ; 右边球框入口x
-	  
+
 
 
 	; initialized data allocation
@@ -122,21 +125,22 @@ ball ends
 	h_gamepage       DWORD    0          ; 游戏界面
 	player1_bitmap   DWORD    0          ; 玩家1的精灵图
 	brick_bitmap     DWORD    0          ; 砖块的位图
-	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零
-	
+	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
+	player1          player	  <<0, 10>, <40, 40>,<0,0>,0,1,0,0,1,1,0>         ; 玩家1
+	bricks			 brick 	  11 DUP (<<0, 0>, <0, 0>, <0, 0>, <0, 0>, 0>)   ; 图内最多有11行砖块
+
+
 	h_winpage1       DWORD    0          ; 玩家1胜利界面
 	h_winpage2       DWORD    0          ; 玩家2胜利界面
 	h_guidepage      DWORD    0          ; 指南页面
 	player2_bitmap   DWORD    0          ; 玩家2的精灵图
 	ball_bitmap      DWORD    0          ; 球的位图
 	score_bitmap     DWORD    0          ; 分数位图
-	;gravity		     REAL4   0.03  
+	;gravity		     REAL4   0.03
 
 	
-	player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
-	bricks			 DWORD 	  11 DUP(0)   ; 图内最多有11行砖块，记录每行砖块所在列数（从0到6）
-
-	player2          player <<760, 420>, <42, 77>,<0,0>,0,2,0,1,1,1,0>                     ; 玩家2
+	
+	player2          player <<760, 420>, <42, 77>,<0,0>,0,2,0,1,1,0>                     ; 玩家2
 	soccer           ball   <<575, 440>, <50, 50>,25,<0.0,0.0>,<0,0>,0,1,1,0>            ; 球
 	paintstruct      PAINTSTRUCT <>   ; 绘制结构体
 
@@ -174,7 +178,8 @@ ball ends
 		paintBricks		 PROTO :DWORD,:DWORD
 		initialBricks	 PROTO 
 		changeBricks 	 PROTO
-
+		;time             PROTO C
+		clock			 PROTO C
 
 		isColliding      PROTO :DWORD
 		paintBall        PROTO :DWORD,:DWORD

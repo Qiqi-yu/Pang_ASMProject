@@ -7,8 +7,7 @@
     option casemap :none        ; case sensitive
 
     bColor   equ  <00999999h>   ; client area brush colour
-    include	game.inc      ; local includes for this file
-	;include Irvine32.inc
+    include	game.inc			; local includes for this file
 	
 
 .code
@@ -155,8 +154,9 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 		; 处理键盘抬起事件
 
 	.ELSEIF uMsg == WM_KEYDOWN
-		; 处理键盘按下事件
 		invoke processKeyDown, wParam
+		; 处理键盘按下事件
+
 	.ELSE 
 		; 默认消息处理函数
 		invoke DefWindowProc,hWin,uMsg,wParam,lParam
@@ -204,15 +204,14 @@ logicThread proc p:DWORD
 	; 游戏界面
 	.WHILE game_status == 2
 		invoke Sleep, 50
-		inc game_counter
 		.IF game_counter >= 80
-			invoke changeBricks
 			mov game_counter, 0
 		.ENDIF
-	 
+		inc game_counter
+		invoke changeBricks
+		
+		; 移动砖块
 		invoke movePlayer, addr player1
-	 
-
 	.ENDW
 
 	; 胜利界面
@@ -225,11 +224,106 @@ logicThread proc p:DWORD
 	ret
 logicThread endp
 
+; 不断进行绘制流程
+paintThread proc p:DWORD
+	.WHILE 1
+		invoke Sleep, 10
+		invoke InvalidateRect, hWnd, NULL, FALSE
+	.ENDW
+	ret
+paintThread endp
+
+; 初始化砖块函数
+initialBricks proc uses esi edx ecx eax ebx edi
+	assume esi:ptr brick
+
+	mov	   ecx, lengthof bricks
+	mov	   esi, offset bricks
+	mov    edi, 0
+L1:
+	    push	ecx
+		push	esi
+		invoke	Sleep, 10
+		invoke	clock
+		pop		esi
+		pop		ecx
+		push	ecx
+		mov		edx, 0
+		mov		ecx, 7
+		div		ecx
+		; edx为所在列数
+		mov		ebx, edx		; 乘数 砖块的列数
+		mov		eax, brick_x_gap  ; 被乘数  75
+		mul		ebx
+		mov		[esi].pos_left_top.x, eax
+		mov		[esi].pos_left_bottom.x, eax
+		add		eax, 150
+		mov		[esi].pos_right_top.x, eax
+		mov		[esi].pos_right_bottom.x, eax
+		add		edi, 50
+		mov		[esi].pos_left_top.y, edi
+		mov		[esi].pos_right_top.y, edi
+		add		edi, 30
+		mov		[esi].pos_left_bottom.y, edi
+		mov		[esi].pos_right_bottom.y, edi
+		add		esi, TYPE bricks
+		pop		ecx
+		loop	L1
+	ret
+initialBricks endp
+
 ; 砖块更新函数
-changeBricks proc
+changeBricks proc uses ecx esi edi ebx edx
+	assume edi:ptr brick
+
+	mov	   ecx, lengthof bricks
+	mov	   edi, offset bricks
 	
+	.IF game_counter >= 80
+		cld
+		mov		esi, edi
+		add		esi, type bricks
+		mov		ecx, 360
+		rep		movsb
+		;生成一个新的砖块
+		push	edi
+		invoke	clock
+		pop		edi
+		mov		edx, 0
+		mov		ecx, 7
+		div		ecx
+		; edx为所在列数
+		mov		ebx, edx		; 乘数 砖块的列数
+		mov		eax, brick_x_gap  ; 被乘数  75
+		mul		ebx
+		;add		edi, type bricks
+		mov		[edi].pos_left_top.x, eax
+		mov		[edi].pos_left_bottom.x, eax
+		add		eax, 150
+		mov		[edi].pos_right_top.x, eax
+		mov		[edi].pos_right_bottom.x, eax
+		
+		mov		[edi].pos_left_top.y, 0
+		mov		[edi].pos_right_top.y, 0
+		mov		[edi].pos_left_bottom.y, 30
+		mov		[edi].pos_right_bottom.y, 30
+		
+	.ELSE 
+		mov		ebx, 50
+		sub		ebx, game_counter
+	L4:
+		mov		[edi].pos_left_top.y, ebx
+		mov		[edi].pos_right_top.y, ebx
+		add		ebx, 30
+		mov		[edi].pos_left_bottom.y, ebx
+		mov		[edi].pos_right_bottom.y, ebx
+		add		ebx, 50
+		add		edi, TYPE bricks
+		loop	L4
+	.ENDIF
 	ret
 changeBricks endp
+
 
 movePlayer proc uses eax ebx, addrPlayer1:DWORD
 	assume eax: PTR player
@@ -281,35 +375,6 @@ processKeyUp proc wParam:WPARAM
 	ret
 processKeyUp endp
 
-; 不断进行绘制流程
-paintThread proc p:DWORD
-	.WHILE 1
-		invoke Sleep, 10
-		invoke InvalidateRect, hWnd, NULL, FALSE
-	.ENDW
-	ret
-paintThread endp
-
-initialBricks proc uses esi edx ecx eax ebx
-	;invoke    randomize
-	mov	   ecx, lengthof bricks
-	mov	   esi, offset bricks
-L1:
-	    ;pushad
-		mov		eax, 0
-		;invoke  randomrange
-		;popad
-		; 这个地方没有随机qwq
-		push	ecx
-		mov		dx, 0
-		mov		cx, 7
-		div		cx
-		mov		[esi], dx
-		add		esi, TYPE bricks
-		pop		ecx
-		loop	L1
-	ret
-initialBricks endp
 
 ; 场景更新函数
 updateScene proc uses eax
@@ -366,37 +431,30 @@ paintBackground endp
 paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
 	invoke SelectObject, member_hdc2, player1_bitmap
 
-	invoke TransparentBlt, member_hdc1,player1.pos.x,player1.pos.y,\
+	invoke TransparentBlt, member_hdc1, player1.pos.x, player1.pos.y,\
 			player1.psize.x, player1.psize.y, member_hdc2, 0, 0, 40, 40, 16777215
 	
 	ret
 paintPlayers endp
 
-
-
-
 ; 砖块绘制函数
 paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC 
 	LOCAL  brick_x :DWORD
 	LOCAL  brick_y :DWORD
+	assume edi:ptr brick
 
 	mov	   ecx, lengthof bricks
 	mov    edi, offset bricks
-	mov	   esi, 50
-	sub    esi, game_counter
+
 L2:
-		mov ebx, [edi]  ; 乘数 砖块的列数
-		mov eax, brick_gap  ; 被乘数  75
-		mul ebx
-		mov	brick_x, eax
-		mov brick_y, esi
-		pushad
-		invoke SelectObject, member_hdc2, brick_bitmap
-		invoke TransparentBlt, member_hdc1, brick_x, brick_y,\
+		push	ecx
+		push	edi
+		invoke	SelectObject, member_hdc2, brick_bitmap
+		pop		edi
+		invoke	TransparentBlt, member_hdc1, [edi].pos_left_top.x, [edi].pos_left_top.y,\
 			brick_width, brick_height, member_hdc2, 0, 0, 150, 30, 16777215
-		popad
-		add esi, 80
-		add edi, TYPE bricks
+		add		edi, type bricks
+		pop		ecx
 		loop L2
 	ret
 paintBricks endp
