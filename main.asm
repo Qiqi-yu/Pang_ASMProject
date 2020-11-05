@@ -326,7 +326,7 @@ changeBricks proc uses ecx esi edi ebx edx
 changeBricks endp
 
 
-movePlayer proc uses eax ebx, addrPlayer1:DWORD
+movePlayer proc uses eax ebx ecx, addrPlayer1:DWORD
 	assume eax: PTR player
 	mov eax,addrPlayer1
 
@@ -349,6 +349,15 @@ movePlayer proc uses eax ebx, addrPlayer1:DWORD
 
 	mov ebx,[eax].speed.x
 	add [eax].pos.x,ebx
+
+	m2m [eax].boundary.left,[eax].pos.x
+	m2m [eax].boundary.top,[eax].pos.y
+	mov ecx,[eax].pos.x
+	add ecx,[eax].psize.x
+	mov [eax].boundary.right,ecx
+	mov ecx,[eax].pos.y
+	add ecx,[eax].psize.y
+	mov [eax].boundary.bottom,ecx
 
 	ret
 

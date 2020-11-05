@@ -44,6 +44,13 @@ coef  struct
 	y real4 0.0
 coef  ends
 
+box struct
+	top SDWORD 0
+	bottom SDWORD 0
+	left SDWORD 0
+	right SDWORD 0
+box ends
+
 COMMENT !
 playerSpeed struct
 	x SDWORD 0
@@ -56,6 +63,7 @@ player struct
 	pos           point <>    ; 玩家的窗口坐标位置
 	psize         point <>    ; 玩家的形状，长度和宽度，方向改变时，这个变量会变
 	speed         point <>    ; 玩家的x,y速度 x速度向左为正，y速度向下为正
+	boundary      box <>	  ;玩家的窗口边界
 	dir           BYTE  0     ; 方向,lower four bits  0000 up down left right,两个相反方向后一个不起作用
 	bmp_dir       BYTE  0     ; 位图的方向，4个bit中只能同时有1位为1，取决于运动时哪个键先被按下
 	score         DWORD 0     ; 玩家得分，起初为0，最多为3
@@ -127,7 +135,7 @@ ball ends
 	player1_bitmap   DWORD    0          ; 玩家1的精灵图
 	brick_bitmap     DWORD    0          ; 砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
-	player1          player	  <<0, 10>, <32,32>,<0,0>,0,1,0,0,1,1,0>         ; 玩家1
+	player1          player	  <<0, 10>, <32,32>,<0,0>,<0,32,0,32>,0,1,0,0,1,1,0>         ; 玩家1
 	bricks			 brick 	  11 DUP (<<0, 0>, <0, 0>, <0, 0>, <0, 0>, 0>)   ; 图内最多有11行砖块
 
 
@@ -141,7 +149,7 @@ ball ends
 
 	
 	
-	player2          player <<760, 420>, <42, 77>,<0,0>,0,2,0,1,1,0>                     ; 玩家2
+	player2          player <<760, 420>, <42, 77>,<0,0>,<0,32,0,32>,0,2,0,1,1,0>                     ; 玩家2
 	soccer           ball   <<575, 440>, <50, 50>,25,<0.0,0.0>,<0,0>,0,1,1,0>            ; 球
 	paintstruct      PAINTSTRUCT <>   ; 绘制结构体
 
