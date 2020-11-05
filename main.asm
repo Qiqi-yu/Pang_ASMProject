@@ -7,7 +7,8 @@
     option casemap :none        ; case sensitive
 
     bColor   equ  <00999999h>   ; client area brush colour
-    include	game.inc			; local includes for this file
+    include	game.inc      ; local includes for this file
+	;include Irvine32.inc
 	
 
 .code
@@ -150,11 +151,12 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 		; 处理enter键按下事件
 
 	.ELSEIF uMsg == WM_KEYUP
+		invoke processKeyUp, wParam
 		; 处理键盘抬起事件
 
 	.ELSEIF uMsg == WM_KEYDOWN
 		; 处理键盘按下事件
-
+		invoke processKeyDown, wParam
 	.ELSE 
 		; 默认消息处理函数
 		invoke DefWindowProc,hWin,uMsg,wParam,lParam
@@ -201,14 +203,16 @@ logicThread proc p:DWORD
 
 	; 游戏界面
 	.WHILE game_status == 2
-		invoke Sleep, 30
+		invoke Sleep, 30 
 		inc game_counter
 		.IF game_counter >= 80
 			invoke changeBricks
 			mov game_counter, 0
 		.ENDIF
-		; 移动砖块
+	 
 		invoke movePlayer, addr player1
+	 
+
 	.ENDW
 
 	; 胜利界面
@@ -221,6 +225,53 @@ logicThread proc p:DWORD
 	ret
 logicThread endp
 
+; 砖块更新函数
+changeBricks proc
+	
+	ret
+changeBricks endp
+
+movePlayer proc uses eax ebx, addrPlayer1:DWORD
+	assume eax: PTR player
+	mov eax,addrPlayer1
+
+	.IF [eax].is_y_collide == 0
+	mov [eax].speed.y,6
+	.ELSE
+    mov [eax].speed.y,0
+	.ENDIF
+
+	mov ebx,[eax].speed.y
+	add [eax].pos.y,ebx
+	mov ebx,[eax].speed.x
+	add [eax].pos.x,ebx
+
+	ret
+
+movePlayer endp
+
+processKeyDown proc wParam:WPARAM
+	.IF game_status == 2
+		.IF wParam == VK_LEFT
+			mov player1.speed.x,-6
+		.ELSEIF wParam == VK_RIGHT
+			mov player1.speed.x,6
+		.ENDIF
+	.ENDIF
+	ret
+processKeyDown endp
+
+processKeyUp proc wParam:WPARAM
+	.IF game_status == 2
+		.IF wParam == VK_LEFT
+			mov player1.speed.x,0
+		.ELSEIF wParam == VK_RIGHT
+			mov player1.speed.x,0
+		.ENDIF
+	.ENDIF
+	ret
+processKeyUp endp
+
 ; 不断进行绘制流程
 paintThread proc p:DWORD
 	.WHILE 1
@@ -230,7 +281,6 @@ paintThread proc p:DWORD
 	ret
 paintThread endp
 
-; 初始化砖块函数
 initialBricks proc uses esi edx ecx eax ebx
 	;invoke    randomize
 	mov	   ecx, lengthof bricks
@@ -251,30 +301,6 @@ L1:
 		loop	L1
 	ret
 initialBricks endp
-
-; 砖块更新函数
-changeBricks proc
-	
-	ret
-changeBricks endp
-
-
-movePlayer proc uses eax ebx, addrPlayer1:DWORD
-	assume eax: PTR player
-	mov eax,addrPlayer1
-
-	.IF [eax].is_y_collide == 0
-	mov [eax].speed.y,8
-	.ELSE
-    mov [eax].speed.y,0
-	.ENDIF
-
-	mov ebx,[eax].speed.y
-	add [eax].pos.y,ebx
-
-	ret
-
-movePlayer endp
 
 ; 场景更新函数
 updateScene proc uses eax
@@ -331,11 +357,14 @@ paintBackground endp
 paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
 	invoke SelectObject, member_hdc2, player1_bitmap
 
-	invoke TransparentBlt, member_hdc1, player1.pos.x, player1.pos.y,\
+	invoke TransparentBlt, member_hdc1,player1.pos.x,player1.pos.y,\
 			player1.psize.x, player1.psize.y, member_hdc2, 0, 0, 40, 40, 16777215
 	
 	ret
 paintPlayers endp
+
+
+
 
 ; 砖块绘制函数
 paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC 
