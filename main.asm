@@ -273,17 +273,13 @@ L1:
 		mov		ebx, edx		; 乘数 砖块的列数
 		mov		eax, brick_x_gap  ; 被乘数  75
 		mul		ebx
-		mov		[esi].pos_left_top.x, eax
-		mov		[esi].pos_left_bottom.x, eax
+		mov		[esi].boundary.left, eax
 		add		eax, brick_width
-		mov		[esi].pos_right_top.x, eax
-		mov		[esi].pos_right_bottom.x, eax
+		mov		[esi].boundary.right, eax
 		add		edi, brick_y_gap_in
-		mov		[esi].pos_left_top.y, edi
-		mov		[esi].pos_right_top.y, edi
+		mov		[esi].boundary.top, edi
 		add		edi, brick_height
-		mov		[esi].pos_left_bottom.y, edi
-		mov		[esi].pos_right_bottom.y, edi
+		mov		[esi].boundary.bottom, edi
 		add		esi, TYPE bricks
 		pop		ecx
 		loop	L1
@@ -301,7 +297,10 @@ changeBricks proc uses ecx esi edi ebx edx
 		cld
 		mov		esi, edi
 		add		esi, type bricks
-		mov		ecx, 360
+		mov		ebx, 10			  ; 乘数 
+		mov		eax, type bricks  ; 被乘数  20
+		mul		ebx
+		mov		ecx, eax
 		rep		movsb
 		;生成一个新的砖块
 		push	edi
@@ -314,28 +313,23 @@ changeBricks proc uses ecx esi edi ebx edx
 		mov		ebx, edx		; 乘数 砖块的列数
 		mov		eax, brick_x_gap  ; 被乘数  75
 		mul		ebx
+		
 		;add		edi, type bricks
-		mov		[edi].pos_left_top.x, eax
-		mov		[edi].pos_left_bottom.x, eax
+		mov		[edi].boundary.left, eax
 		add		eax, brick_width
-		mov		[edi].pos_right_top.x, eax
-		mov		[edi].pos_right_bottom.x, eax
+		mov		[edi].boundary.right, eax
 		mov		eax, my_window_height
-		mov		[edi].pos_left_top.y, eax
-		mov		[edi].pos_right_top.y, eax
+		mov		[edi].boundary.top, eax
 		add		eax, brick_height
-		mov		[edi].pos_left_bottom.y, eax
-		mov		[edi].pos_right_bottom.y, eax
+		mov		[edi].boundary.bottom, eax
 
 	.ELSE
 		mov		ebx, brick_y_gap_in
 		sub		ebx, game_counter
 	L4:
-		mov		[edi].pos_left_top.y, ebx
-		mov		[edi].pos_right_top.y, ebx
+		mov		[edi].boundary.top, ebx
 		add		ebx, brick_height
-		mov		[edi].pos_left_bottom.y, ebx
-		mov		[edi].pos_right_bottom.y, ebx
+		mov		[edi].boundary.bottom, ebx
 		add		ebx, brick_y_gap_in
 		add		edi, TYPE bricks
 		loop	L4
@@ -483,7 +477,7 @@ paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC
 			push	edi
 			invoke	SelectObject, member_hdc2, brick_bitmap
 			pop		edi
-			invoke	TransparentBlt, member_hdc1, [edi].pos_left_top.x, [edi].pos_left_top.y,\
+			invoke	TransparentBlt, member_hdc1, [edi].boundary.left, [edi].boundary.top,\
 				brick_width, brick_height, member_hdc2, 0, 0, 150, 30, 16777215
 			add		edi, type bricks
 			pop		ecx

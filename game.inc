@@ -45,10 +45,10 @@ coef  struct
 coef  ends
 
 box struct
-	top SDWORD 0
-	bottom SDWORD 0
-	left SDWORD 0
-	right SDWORD 0
+	top		SDWORD 0
+	bottom	SDWORD 0
+	left	SDWORD 0
+	right	SDWORD 0
 box ends
 
 COMMENT !
@@ -75,10 +75,7 @@ player ends
 
 ; 砖块类
 brick struct
-	pos_left_top		point    <>  ; 左上角位置
-	pos_right_top		point    <>  ; 右上角位置
-	pos_left_bottom		point    <>  ; 左下角位置
-	pos_right_bottom	point    <>  ; 右下角位置
+	boundary			box		 <>	 ; 砖块的边界
 	brick_type          DWORD    0   ; 砖块类型
 brick ends
 
@@ -137,7 +134,7 @@ ball ends
 	brick_bitmap     DWORD    0          ; 砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
 	player1          player	  <<0, 10>, <32,32>,<0,0>,<0,32,0,32>,0,1,0,0,1,1,0>         ; 玩家1
-	bricks			 brick 	  11 DUP (<<0, 0>, <0, 0>, <0, 0>, <0, 0>, 0>)   ; 图内最多有11行砖块
+	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 0>)   ; 图内最多有11行砖块
 	game_over		 DWORD    0
 
 
