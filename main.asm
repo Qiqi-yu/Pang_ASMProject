@@ -204,7 +204,7 @@ logicThread proc p:DWORD
 	; ÓÎÏ·½çÃæ
 	.WHILE game_status == 2
 		invoke Sleep, 50
-		.IF game_counter >= 80
+		.IF game_counter >= brick_y_gap
 			mov game_counter, 0
 		.ENDIF
 		inc game_counter
@@ -257,13 +257,13 @@ L1:
 		mul		ebx
 		mov		[esi].pos_left_top.x, eax
 		mov		[esi].pos_left_bottom.x, eax
-		add		eax, 150
+		add		eax, brick_width
 		mov		[esi].pos_right_top.x, eax
 		mov		[esi].pos_right_bottom.x, eax
-		add		edi, 50
+		add		edi, brick_y_gap_in
 		mov		[esi].pos_left_top.y, edi
 		mov		[esi].pos_right_top.y, edi
-		add		edi, 30
+		add		edi, brick_height
 		mov		[esi].pos_left_bottom.y, edi
 		mov		[esi].pos_right_bottom.y, edi
 		add		esi, TYPE bricks
@@ -279,7 +279,7 @@ changeBricks proc uses ecx esi edi ebx edx
 	mov	   ecx, lengthof bricks
 	mov	   edi, offset bricks
 	
-	.IF game_counter >= 80
+	.IF game_counter >= brick_y_gap
 		cld
 		mov		esi, edi
 		add		esi, type bricks
@@ -299,25 +299,26 @@ changeBricks proc uses ecx esi edi ebx edx
 		;add		edi, type bricks
 		mov		[edi].pos_left_top.x, eax
 		mov		[edi].pos_left_bottom.x, eax
-		add		eax, 150
+		add		eax, brick_width
 		mov		[edi].pos_right_top.x, eax
 		mov		[edi].pos_right_bottom.x, eax
-		
-		mov		[edi].pos_left_top.y, 0
-		mov		[edi].pos_right_top.y, 0
-		mov		[edi].pos_left_bottom.y, 30
-		mov		[edi].pos_right_bottom.y, 30
+		mov		eax, my_window_height
+		mov		[edi].pos_left_top.y, eax
+		mov		[edi].pos_right_top.y, eax
+		add		eax, brick_height
+		mov		[edi].pos_left_bottom.y, eax
+		mov		[edi].pos_right_bottom.y, eax
 		
 	.ELSE 
-		mov		ebx, 50
+		mov		ebx, brick_y_gap_in
 		sub		ebx, game_counter
 	L4:
 		mov		[edi].pos_left_top.y, ebx
 		mov		[edi].pos_right_top.y, ebx
-		add		ebx, 30
+		add		ebx, brick_height
 		mov		[edi].pos_left_bottom.y, ebx
 		mov		[edi].pos_right_bottom.y, ebx
-		add		ebx, 50
+		add		ebx, brick_y_gap_in
 		add		edi, TYPE bricks
 		loop	L4
 	.ENDIF

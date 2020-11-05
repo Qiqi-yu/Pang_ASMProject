@@ -89,12 +89,13 @@ ball ends
 
 ; 游戏中常量
 .const
-	my_window_width  EQU   600       ; 窗体水平宽度
-	my_window_height EQU   800       ; 窗体竖直高度
-	brick_width		 EQU   150       ; 砖块水平宽度
-	brick_height	 EQU   30        ; 砖块竖直高度
-	brick_x_gap		 EQU   75
-	brick_y_gap		 EQU   80
+	my_window_width  EQU   480       ; 窗体水平宽度
+	my_window_height EQU   640       ; 窗体竖直高度
+	brick_width		 EQU   120       ; 砖块水平宽度
+	brick_height	 EQU   24        ; 砖块竖直高度
+	brick_x_gap		 EQU   60
+	brick_y_gap		 EQU   64
+	brick_y_gap_in	 EQU   40
 
 	dir_top          EQU   8          ; 我们正常见到的上下左右
 	dir_down         EQU   4
@@ -126,7 +127,7 @@ ball ends
 	player1_bitmap   DWORD    0          ; 玩家1的精灵图
 	brick_bitmap     DWORD    0          ; 砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
-	player1          player	  <<0, 10>, <40, 40>,<0,0>,0,1,0,0,1,1,0>         ; 玩家1
+	player1          player	  <<0, 10>, <32,32>,<0,0>,0,1,0,0,1,1,0>         ; 玩家1
 	bricks			 brick 	  11 DUP (<<0, 0>, <0, 0>, <0, 0>, <0, 0>, 0>)   ; 图内最多有11行砖块
 
 
