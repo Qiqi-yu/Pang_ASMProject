@@ -148,6 +148,18 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 
 	.ELSEIF uMsg == WM_CHAR
 		; 处理enter键按下事件
+		.IF wParam == 13
+			.IF game_status == 0
+				mov game_status, 1
+				invoke initialBricks
+			.ELSEIF game_status == 2
+				mov game_status, 0
+			.ENDIF
+		.ENDIF
+		; 处理esc键按下事件
+		.IF wParam == 27
+			invoke PostQuitMessage, NULL
+		.ENDIF
 
 	.ELSEIF uMsg == WM_KEYUP
 		invoke processKeyUp, wParam
@@ -157,7 +169,7 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 		invoke processKeyDown, wParam
 		; 处理键盘按下事件
 
-	.ELSE 
+	.ELSE
 		; 默认消息处理函数
 		invoke DefWindowProc,hWin,uMsg,wParam,lParam
 		ret
@@ -168,6 +180,8 @@ WndProc endp
 
 loadGameImages proc
 	; 加载开始界面的位图
+	invoke LoadBitmap, hInstance, 501
+	mov h_startpage, eax
 
     ; 加载游戏界面的位图
 	invoke LoadBitmap, hInstance, 501
@@ -181,45 +195,50 @@ loadGameImages proc
 	invoke LoadBitmap, hInstance, 503
 	mov brick_bitmap, eax
 
+	; 加载结束界面的位图
+	invoke LoadBitmap, hInstance, 501
+	mov h_endpage, eax
+
+
 	ret
 loadGameImages endp
 
 ; 一个线程函数，根据场景的状态不断循环，游戏状态时候，不断进行碰撞判断等等
 logicThread proc p:DWORD
-	; 开始界面，可以用户手动进入指南界面，或者到时间自动进入
-	.WHILE game_status == 0
-		;invoke Sleep, 1000
-		mov game_status, 2
-		invoke initialBricks
-	.ENDW
-
+	;LOCAL area:RECT
 	game:
-
-	; 指南界面
-	.WHILE game_status == 1
-		invoke Sleep, 30
+	; 开始界面，需要通过enter进入
+	.WHILE game_status == 0
+		invoke Sleep, 1000
 	.ENDW
 
 	; 游戏界面
-	.WHILE game_status == 2
+	.WHILE game_status == 1
 		invoke Sleep, 50
+		; 重置计数器
 		.IF game_counter >= brick_y_gap
 			mov game_counter, 0
 		.ENDIF
+		; 改变计数器并上移砖块
 		inc game_counter
 		invoke changeBricks
-		
-		; 移动砖块
+
+		; 角色移动
 		invoke movePlayer, addr player1
+
+		.IF game_over == 1
+			mov game_status, 2
+		.ENDIF
 	.ENDW
 
-	; 胜利界面
-	;.WHILE game_status == 3 || game_status == 4
-	;	invoke Sleep, 30
-	;.ENDW
+	; 结束界面
+	.WHILE game_status == 2
+		invoke Sleep, 30
+
+	.ENDW
 
 	jmp game
-	
+
 	ret
 logicThread endp
 
@@ -277,7 +296,7 @@ changeBricks proc uses ecx esi edi ebx edx
 
 	mov	   ecx, lengthof bricks
 	mov	   edi, offset bricks
-	
+
 	.IF game_counter >= brick_y_gap
 		cld
 		mov		esi, edi
@@ -307,8 +326,8 @@ changeBricks proc uses ecx esi edi ebx edx
 		add		eax, brick_height
 		mov		[edi].pos_left_bottom.y, eax
 		mov		[edi].pos_right_bottom.y, eax
-		
-	.ELSE 
+
+	.ELSE
 		mov		ebx, brick_y_gap_in
 		sub		ebx, game_counter
 	L4:
@@ -337,7 +356,7 @@ movePlayer proc uses eax ebx ecx, addrPlayer1:DWORD
 	;fadd [eax].speed.y,0.03
 	mov ebx,[eax].speed.y
 	add [eax].pos.y,ebx
-	
+
 	.ELSE
 	;fldz
 	;fstp [eax].speed.y
@@ -418,7 +437,7 @@ updateScene proc uses eax
 	; BitBlt（hDestDC, x, y, nWidth, nheight, hSrcDC, xSrc, ySrc, dwRop）
 	; 将源矩形区域直接拷贝到目标区域：SRCCOPY
 	invoke BitBlt, hdc, 0, 0, my_window_width, my_window_height, member_hdc, 0, 0, SRCCOPY
-	
+
 	invoke DeleteDC, member_hdc
 	invoke DeleteDC, member_hdc2
 	invoke DeleteObject, h_bitmap
@@ -428,8 +447,14 @@ updateScene endp
 
 ; 背景图片绘制函数
 paintBackground proc  member_hdc1:HDC, member_hdc2:HDC
-	.IF game_status == 2
+	.IF game_status == 0
+		invoke SelectObject, member_hdc2,  h_startpage
+		invoke BitBlt, member_hdc1, 0, 0, my_window_width, my_window_height, member_hdc2, 0, 0, SRCCOPY
+	.ELSEIF game_status == 1
 		invoke SelectObject, member_hdc2,  h_gamepage
+		invoke BitBlt, member_hdc1, 0, 0, my_window_width, my_window_height, member_hdc2, 0, 0, SRCCOPY
+	.ELSEIF game_status == 2
+		invoke SelectObject, member_hdc2,  h_endpage
 		invoke BitBlt, member_hdc1, 0, 0, my_window_width, my_window_height, member_hdc2, 0, 0, SRCCOPY
 	.ENDIF
 
@@ -438,33 +463,32 @@ paintBackground endp
 
 ; 游戏主角绘制函数
 paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
-	invoke SelectObject, member_hdc2, player1_bitmap
-
-	invoke TransparentBlt, member_hdc1, player1.pos.x, player1.pos.y,\
-			player1.psize.x, player1.psize.y, member_hdc2, 0, 0, 40, 40, 16777215
-	
+	.IF game_status == 1
+		invoke SelectObject, member_hdc2, player1_bitmap
+		invoke TransparentBlt, member_hdc1, player1.pos.x, player1.pos.y,\
+				player1.psize.x, player1.psize.y, member_hdc2, 0, 0, 40, 40, 16777215
+	.ENDIF
 	ret
 paintPlayers endp
 
 ; 砖块绘制函数
-paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC 
-	LOCAL  brick_x :DWORD
-	LOCAL  brick_y :DWORD
+paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC
 	assume edi:ptr brick
+	.IF game_status == 1
+		mov	   ecx, lengthof bricks
+		mov    edi, offset bricks
 
-	mov	   ecx, lengthof bricks
-	mov    edi, offset bricks
-
-L2:
-		push	ecx
-		push	edi
-		invoke	SelectObject, member_hdc2, brick_bitmap
-		pop		edi
-		invoke	TransparentBlt, member_hdc1, [edi].pos_left_top.x, [edi].pos_left_top.y,\
-			brick_width, brick_height, member_hdc2, 0, 0, 150, 30, 16777215
-		add		edi, type bricks
-		pop		ecx
-		loop L2
+		L2:
+			push	ecx
+			push	edi
+			invoke	SelectObject, member_hdc2, brick_bitmap
+			pop		edi
+			invoke	TransparentBlt, member_hdc1, [edi].pos_left_top.x, [edi].pos_left_top.y,\
+				brick_width, brick_height, member_hdc2, 0, 0, 150, 30, 16777215
+			add		edi, type bricks
+			pop		ecx
+			loop L2
+	.ENDIF
 	ret
 paintBricks endp
 

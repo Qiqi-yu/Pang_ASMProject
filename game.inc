@@ -51,6 +51,13 @@ box struct
 	right SDWORD 0
 box ends
 
+COMMENT !
+playerSpeed struct
+	x SDWORD 0
+	y real4 0.0
+playerSpeed ends
+!
+
 ; 玩家结构体
 player struct
 	pos           point <>    ; 玩家的窗口坐标位置
@@ -121,15 +128,17 @@ ball ends
 
 
 	; initialized data allocation
-.data	
+.data
 	game_status      BYTE     0          ; 0 开始界面 1 帮助界面 2 游戏界面 3 玩家1胜利 4 玩家2胜利
-	;h_startpage     DWORD    0          ; 开始界面
+	h_startpage      DWORD    0          ; 开始界面
 	h_gamepage       DWORD    0          ; 游戏界面
+	h_endpage        DWORD    0          ; 结束界面
 	player1_bitmap   DWORD    0          ; 玩家1的精灵图
 	brick_bitmap     DWORD    0          ; 砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
 	player1          player	  <<0, 10>, <32,32>,<0,0>,<0,32,0,32>,0,1,0,0,1,1,0>         ; 玩家1
 	bricks			 brick 	  11 DUP (<<0, 0>, <0, 0>, <0, 0>, <0, 0>, 0>)   ; 图内最多有11行砖块
+	game_over		 DWORD    0
 
 
 	h_winpage1       DWORD    0          ; 玩家1胜利界面
