@@ -1,30 +1,31 @@
 ;     include files
-;     ~~~~~~~~~~~~~
-      include C:\masm32\INCLUDE\windows.inc
-      include C:\masm32\INCLUDE\masm32.inc
-      include C:\masm32\INCLUDE\gdi32.inc
-      include C:\masm32\INCLUDE\user32.inc
-      include C:\masm32\INCLUDE\kernel32.inc
-      include C:\masm32\INCLUDE\Comctl32.inc
-      include C:\masm32\INCLUDE\comdlg32.inc
-      include C:\masm32\INCLUDE\shell32.inc
-      include C:\masm32\INCLUDE\oleaut32.inc
-      include C:\masm32\INCLUDE\msvcrt.inc
-	  include C:\masm32\INCLUDE\msimg32.inc
+;     
+	  
+      include windows.inc
+      include masm32.inc
+      include gdi32.inc
+      include user32.inc
+      include kernel32.inc
+      include Comctl32.inc
+      include comdlg32.inc
+      include shell32.inc
+      include oleaut32.inc
+      include msvcrt.inc
+	  include msimg32.inc
       include C:\masm32\macros\macros.asm
 
 ;     libraries
 ;     ~~~~~~~~~
-      includelib C:\masm32\LIB\masm32.lib
-      includelib C:\masm32\LIB\gdi32.lib
-      includelib C:\masm32\LIB\user32.lib
-      includelib C:\masm32\LIB\kernel32.lib
-      includelib C:\masm32\LIB\Comctl32.lib
-      includelib C:\masm32\LIB\comdlg32.lib
-      includelib C:\masm32\LIB\shell32.lib
-      includelib C:\masm32\LIB\oleaut32.lib
-      includelib C:\masm32\LIB\msvcrt.lib
-	  includelib C:\masm32\LIB\msimg32.lib
+      includelib masm32.lib
+      includelib gdi32.lib
+      includelib user32.lib
+      includelib kernel32.lib
+      includelib Comctl32.lib
+      includelib comdlg32.lib
+      includelib shell32.lib
+      includelib oleaut32.lib
+      includelib msvcrt.lib
+	  includelib msimg32.lib
 	  
 
       ; -----------------
@@ -80,10 +81,10 @@ ball ends
 .const
 	my_window_width  EQU   600       ; 窗体水平宽度
 	my_window_height EQU   800       ; 窗体竖直高度
-
 	brick_width		 EQU   150       ; 砖块水平宽度
 	brick_height	 EQU   30        ; 砖块竖直高度
 	brick_gap		 EQU   75
+
 
 	dir_top          EQU   8          ; 我们正常见到的上下左右
 	dir_down         EQU   4
@@ -115,7 +116,10 @@ ball ends
 	player1_bitmap   DWORD    0          ; 玩家1的精灵图
 	brick_bitmap     DWORD    0          ; 砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零
-	
+	player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,0,1,1,0>                     ; 玩家1
+	bricks			 DWORD 	  11 DUP(0)   ; 图内最多有11行砖块，记录每行砖块所在列数（从0到6）
+
+
 	h_winpage1       DWORD    0          ; 玩家1胜利界面
 	h_winpage2       DWORD    0          ; 玩家2胜利界面
 	h_guidepage      DWORD    0          ; 指南页面
@@ -125,9 +129,7 @@ ball ends
 
 
 	
-	player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,0,1,1,0>                     ; 玩家1
-	bricks			 DWORD 	  11 DUP(0)   ; 图内最多有11行砖块，记录每行砖块所在列数（从0到6）
-
+	
 	player2          player <<760, 420>, <42, 77>,<0,0>,0,2,0,1,1,0>                     ; 玩家2
 	soccer           ball   <<575, 440>, <50, 50>,25,<0.0,0.0>,<0,0>,0,1,1,0>            ; 球
 	paintstruct      PAINTSTRUCT <>   ; 绘制结构体
@@ -165,7 +167,7 @@ ball ends
 		paintPlayers     PROTO :DWORD,:DWORD
 		paintBricks		 PROTO :DWORD,:DWORD
 		initialBricks	 PROTO 
-
+		changeBricks 	 PROTO
 
 
 		isColliding      PROTO :DWORD
