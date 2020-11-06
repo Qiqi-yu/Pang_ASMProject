@@ -88,13 +88,13 @@ collision struct
 	is_x_collide		BYTE	0	; x方向是否碰撞
 	x_need_move			DWORD	0	; 如果x已经要碰上了（is_x_collide==1），应该移动多少
 	is_y_collide		BYTE	0	; y方向是否碰撞（在砖块上
-	y_need_move			DWORD	0	; 如果y已经要碰上了（is_y_collide==1），应该移动多少
+	y_need_move			SDWORD	0	; 如果y已经要碰上了（is_y_collide==1），应该移动多少
 collision ends
 
 ; 游戏中常量
 .const
-	my_window_width  EQU   480       ; 窗体水平宽度
-	my_window_height EQU   640       ; 窗体竖直高度
+	my_window_width  EQU   490       ; 窗体水平宽度
+	my_window_height EQU   675       ; 窗体竖直高度
 	brick_width		 EQU   120       ; 砖块水平宽度
 	brick_height	 EQU   24        ; 砖块竖直高度
 	brick_x_gap		 EQU   60
@@ -133,7 +133,7 @@ collision ends
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
 	player1          player	  <<0, 10>, <32,32>,<0,0>,<0,32,0,32>,1,1,0,0,1,1,0>         ; 玩家1
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 0>)   ; 图内最多有11行砖块
-	cur_collision	 collision	<0, 0, 0, 0, 0, 0>				; 碰撞信息
+	cur_collision	 collision	<0, 0, 0, 0, 0, 0, 0, 0>				; 碰撞信息
 	game_over		 DWORD    0
 
 

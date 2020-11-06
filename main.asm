@@ -354,11 +354,12 @@ colliDetect proc uses eax ebx ecx esi edi edx
 	LOCAL next_right:SDWORD
 	LOCAL next_bottom:SDWORD
 	LOCAL cur_block:DWORD
-	LOCAL next_block:DWORD
+	LOCAL next_block:DWORD 
+
 	mov	edi, offset	cur_collision
 	mov	esi, offset player1
-	mov ecx, offset bricks
-	
+	mov ecx, offset bricks 
+
 	; 计算当前左、右、下
 	mov eax, [esi].pos.x
 	mov cur_left, eax 
@@ -378,6 +379,7 @@ colliDetect proc uses eax ebx ecx esi edi edx
 	mov next_right, eax
 	mov eax, cur_bottom
 	add eax, [esi].speed.y
+	inc eax
 	mov next_bottom, eax
 
 	; 除数为32位时，被除数为EDX:EAX
@@ -418,13 +420,15 @@ colliDetect proc uses eax ebx ecx esi edi edx
 	.IF eax > 0
 		add ecx, next_block
 		mov eax, [ecx].boundary.top
-		.IF cur_bottom <= eax && next_bottom > eax
+		inc eax
+		.IF cur_bottom <= eax && next_bottom >= eax
 			mov ebx, [ecx].boundary.left
 			mov edx, [ecx].boundary.right
 			; TODO
 			.IF (cur_right > ebx && cur_left < edx)
 				mov [edi].is_y_collide, 1
 				sub eax, cur_bottom			; 移动距离为 brick.boundary.top - cur_bottom
+				dec eax
 				mov [edi].y_need_move, eax
 			;.ELSEIF (next_right > ebx && next_left < edx)
 			;	mov [edi].is_y_collide, 1
@@ -437,13 +441,15 @@ colliDetect proc uses eax ebx ecx esi edi edx
 
 	add ecx, cur_block
 	mov eax, [ecx].boundary.top
-	.IF cur_bottom <= eax && next_bottom > eax
+	inc eax
+	.IF cur_bottom <= eax && next_bottom >= eax
 		mov ebx, [ecx].boundary.left
 		mov edx, [ecx].boundary.right
 		; TODO
 		.IF cur_right > ebx && cur_left < edx
 			mov [edi].is_y_collide, 1
 			sub eax, cur_bottom			; 移动距离为 brick.boundary.top - cur_bottom
+			dec eax
 			mov [edi].y_need_move, eax
 			; mov eax, [ecx].brick_type
 			; mov [edi].collision_type, eax 
@@ -475,11 +481,13 @@ return_main:
 	ret
 colliDetect endp
 
-movePlayer proc uses eax ebx ecx, addrPlayer1:DWORD
+movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	assume eax: PTR player
+	assume edi: PTR collision
 	mov eax,addrPlayer1
+	mov edi,offset cur_collision
 
-	.IF [eax].is_y_collide == 0
+	.IF [edi].is_y_collide == 0
 	add [eax].speed.y,1
 	;fld [eax].speed.y
 	;fadd gravity
@@ -493,7 +501,11 @@ movePlayer proc uses eax ebx ecx, addrPlayer1:DWORD
 	;fstp [eax].speed.y
     ;mov [eax].speed.y,0.0
 	mov [eax].speed.y,0
-	dec [eax].pos.y
+	push ebx
+	mov ebx,[edi].y_need_move
+	add [eax].pos.y,ebx
+	pop ebx
+
 	.ENDIF
 
 	mov ebx,[eax].speed.x
