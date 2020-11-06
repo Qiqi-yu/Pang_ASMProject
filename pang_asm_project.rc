@@ -56,6 +56,12 @@ IDB_BITMAP_GAMEBG       BITMAP                  "C:\\Users\\86181\\Desktop\\asm\
 
 IDB_BITMAP_BRICK        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\brick.bmp"
 
+IDB_BITMAP_STARTBG      BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\start_bg.bmp"
+
+IDB_BITMAP_PLAYER_LEFT  BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\role_left.bmp"
+
+IDB_BITMAP_PLAYER_RIGHT BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\role_right.bmp"
+
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 

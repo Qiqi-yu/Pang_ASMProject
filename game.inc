@@ -130,7 +130,8 @@ ball ends
 	h_startpage      DWORD    0          ; 开始界面
 	h_gamepage       DWORD    0          ; 游戏界面
 	h_endpage        DWORD    0          ; 结束界面
-	player1_bitmap   DWORD    0          ; 玩家1的精灵图
+	player_left_bitmap    DWORD    0          ; 玩家向左的位图
+	player_right_bitmap   DWORD    0          ; 玩家向右的位图
 	brick_bitmap     DWORD    0          ; 砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
 	player1          player	  <<0, 10>, <32,32>,<0,0>,<0,32,0,32>,0,1,0,0,1,1,0>         ; 玩家1

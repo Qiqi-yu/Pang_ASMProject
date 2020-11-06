@@ -180,16 +180,20 @@ WndProc endp
 
 loadGameImages proc
 	; 加载开始界面的位图
-	invoke LoadBitmap, hInstance, 501
+	invoke LoadBitmap, hInstance, 500
 	mov h_startpage, eax
 
     ; 加载游戏界面的位图
 	invoke LoadBitmap, hInstance, 501
 	mov h_gamepage, eax
 
-	; 加载玩家1的位图
-	invoke LoadBitmap, hInstance, 502
-	mov player1_bitmap, eax
+	; 加载玩家向左的位图
+	invoke LoadBitmap, hInstance, 504
+	mov player_left_bitmap, eax
+
+	; 加载玩家向右的位图
+	invoke LoadBitmap, hInstance, 505
+	mov player_right_bitmap, eax
 
 	; 加载砖块的位图
 	invoke LoadBitmap, hInstance, 503
@@ -297,7 +301,7 @@ changeBricks proc uses ecx esi edi ebx edx
 		cld
 		mov		esi, edi
 		add		esi, type bricks
-		mov		ebx, 10			  ; 乘数 
+		mov		ebx, 10			  ; 乘数    砖块数量
 		mov		eax, type bricks  ; 被乘数  20
 		mul		ebx
 		mov		ecx, eax
@@ -376,7 +380,7 @@ movePlayer proc uses eax ebx ecx, addrPlayer1:DWORD
 movePlayer endp
 
 processKeyDown proc wParam:WPARAM
-	.IF game_status == 2
+	.IF game_status == 1
 		.IF wParam == VK_LEFT
 			mov player1.speed.x,-6
 		.ELSEIF wParam == VK_RIGHT
@@ -387,7 +391,7 @@ processKeyDown proc wParam:WPARAM
 processKeyDown endp
 
 processKeyUp proc wParam:WPARAM
-	.IF game_status == 2
+	.IF game_status == 1
 		.IF wParam == VK_LEFT
 			mov player1.speed.x,0
 		.ELSEIF wParam == VK_RIGHT
@@ -458,9 +462,13 @@ paintBackground endp
 ; 游戏主角绘制函数
 paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
 	.IF game_status == 1
-		invoke SelectObject, member_hdc2, player1_bitmap
+		.IF player1.speed.x >= 0
+			invoke SelectObject, member_hdc2, player_right_bitmap
+		.ELSEIF player1.speed.x < 0
+			invoke SelectObject, member_hdc2, player_left_bitmap
+		.ENDIF
 		invoke TransparentBlt, member_hdc1, player1.pos.x, player1.pos.y,\
-				player1.psize.x, player1.psize.y, member_hdc2, 0, 0, 40, 40, 16777215
+				player1.psize.x, player1.psize.y, member_hdc2, 0, 0, player1.psize.x, player1.psize.y, 16777215
 	.ENDIF
 	ret
 paintPlayers endp
