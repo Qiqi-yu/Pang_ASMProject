@@ -212,7 +212,7 @@ loadGameImages endp
 logicThread proc p:DWORD
 	;LOCAL area:RECT
 	game:
-	; 开始界面，需要通过enter进入
+	; 开始界面，需要通过enter键进入
 	.WHILE game_status == 0
 		invoke Sleep, 1000
 	.ENDW
