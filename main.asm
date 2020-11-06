@@ -151,6 +151,7 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 		.IF wParam == 13
 			.IF game_status == 0
 				mov game_status, 1
+				mov player1.dir, dir_right
 				invoke initialBricks
 			.ELSEIF game_status == 2
 				mov game_status, 0
@@ -386,6 +387,11 @@ processKeyDown proc wParam:WPARAM
 		.ELSEIF wParam == VK_RIGHT
 			mov player1.speed.x,6
 		.ENDIF
+		.IF player1.speed.x < 0
+			mov player1.dir, dir_left
+		.ELSEIF player1.speed.x > 0
+			mov player1.dir, dir_right
+		.ENDIF
 	.ENDIF
 	ret
 processKeyDown endp
@@ -462,10 +468,10 @@ paintBackground endp
 ; 游戏主角绘制函数
 paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
 	.IF game_status == 1
-		.IF player1.speed.x >= 0
-			invoke SelectObject, member_hdc2, player_right_bitmap
-		.ELSEIF player1.speed.x < 0
+		.IF player1.dir == dir_left
 			invoke SelectObject, member_hdc2, player_left_bitmap
+		.ELSEIF player1.dir == dir_right
+			invoke SelectObject, member_hdc2, player_right_bitmap
 		.ENDIF
 		invoke TransparentBlt, member_hdc1, player1.pos.x, player1.pos.y,\
 				player1.psize.x, player1.psize.y, member_hdc2, 0, 0, player1.psize.x, player1.psize.y, 16777215

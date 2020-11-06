@@ -64,7 +64,7 @@ player struct
 	psize         point <>    ; 玩家的形状，长度和宽度，方向改变时，这个变量会变
 	speed         point <>    ; 玩家的x,y速度 x速度向左为正，y速度向下为正
 	boundary      box <>	  ;玩家的窗口边界
-	dir           BYTE  0     ; 方向,lower four bits  0000 up down left right,两个相反方向后一个不起作用
+	dir           BYTE  1     ; 上8 下4 左2 右1
 	bmp_dir       BYTE  0     ; 位图的方向，4个bit中只能同时有1位为1，取决于运动时哪个键先被按下
 	score         DWORD 0     ; 玩家得分，起初为0，最多为3
 	is_y_collide  BYTE  0     ; y方向是否碰撞（在砖块上）
@@ -134,7 +134,7 @@ ball ends
 	player_right_bitmap   DWORD    0          ; 玩家向右的位图
 	brick_bitmap     DWORD    0          ; 砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
-	player1          player	  <<0, 10>, <32,32>,<0,0>,<0,32,0,32>,0,1,0,0,1,1,0>         ; 玩家1
+	player1          player	  <<0, 10>, <32,32>,<0,0>,<0,32,0,32>,1,1,0,0,1,1,0>         ; 玩家1
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 0>)   ; 图内最多有11行砖块
 	game_over		 DWORD    0
 
