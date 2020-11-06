@@ -228,6 +228,9 @@ logicThread proc p:DWORD
 		inc game_counter
 		invoke changeBricks
 
+		; 碰撞检测
+		invoke colliDetect
+
 		; 角色移动
 		invoke movePlayer, addr player1
 
@@ -342,6 +345,135 @@ changeBricks proc uses ecx esi edi ebx edx
 	ret
 changeBricks endp
 
+colliDetect proc uses eax ebx ecx esi edi edx
+	assume esi: PTR player, edi: PTR collision, ecx: PTR brick
+	LOCAL cur_left:SDWORD
+	LOCAL cur_right:SDWORD
+	LOCAL cur_bottom:SDWORD
+	LOCAL next_left:SDWORD
+	LOCAL next_right:SDWORD
+	LOCAL next_bottom:SDWORD
+	LOCAL cur_block:DWORD
+	LOCAL next_block:DWORD
+	mov	edi, offset	cur_collision
+	mov	esi, offset player1
+	mov ecx, offset bricks
+	
+	; 计算当前左、右、下
+	mov eax, [esi].pos.x
+	mov cur_left, eax 
+	mov eax, [esi].pos.x
+	add eax, [esi].psize.x
+	mov cur_right, eax
+	mov eax, [esi].pos.y
+	add eax, [esi].psize.y
+	mov cur_bottom, eax
+
+	; 计算考虑速度后的左、右、下
+	mov eax, [esi].pos.x
+	add eax, [esi].speed.x
+	mov next_left, eax
+	mov eax, cur_right
+	add eax, [esi].speed.x
+	mov next_right, eax
+	mov eax, cur_bottom
+	add eax, [esi].speed.y
+	mov next_bottom, eax
+
+	; 除数为32位时，被除数为EDX:EAX
+	; cur_collision.cur_block = player1.boundary.bottom / brick_y_gap
+	mov edx, 0
+	mov eax, cur_bottom
+	mov ebx, brick_y_gap
+	idiv ebx				
+	mov cur_block, eax
+	mov eax, SIZEOF brick
+	mul cur_block
+	mov cur_block, eax
+	
+
+	; cur_collision.next_block = ( player1.boundary.bottom + player1.speed.y ) / brick_y_gap
+	mov edx, 0
+	mov eax, next_bottom
+	mov ebx, brick_y_gap
+	idiv ebx
+	mov next_block, eax
+	mov eax, SIZEOF brick
+	mul next_block
+	mov next_block, eax
+
+	; 检测y
+	; 优先级：如果当前块碰到了，就不会碰触到下一区块，
+	; 因此应该先检测下一区块再检查当前区块，
+	; 这样当前区块碰撞信息可以覆盖上一块的碰撞
+	; 先检测下一区块是否碰撞
+	; .ENDIF
+	; 检测当前区块是否碰撞
+
+	mov [edi].is_y_collide, 0
+	mov eax, next_block
+	mov edx, cur_block
+	sub eax, cur_block
+	push ecx
+	.IF eax > 0
+		add ecx, next_block
+		mov eax, [ecx].boundary.top
+		.IF cur_bottom <= eax && next_bottom > eax
+			mov ebx, [ecx].boundary.left
+			mov edx, [ecx].boundary.right
+			; TODO
+			.IF (cur_right > ebx && cur_left < edx)
+				mov [edi].is_y_collide, 1
+				sub eax, cur_bottom			; 移动距离为 brick.boundary.top - cur_bottom
+				mov [edi].y_need_move, eax
+			;.ELSEIF (next_right > ebx && next_left < edx)
+			;	mov [edi].is_y_collide, 1
+			;	sub eax, cur_bottom			; 移动距离为 brick.boundary.top - cur_bottom
+			;	mov [edi].y_need_move, eax
+			.ENDIF
+		.ENDIF
+	.ENDIF
+	pop ecx
+
+	add ecx, cur_block
+	mov eax, [ecx].boundary.top
+	.IF cur_bottom <= eax && next_bottom > eax
+		mov ebx, [ecx].boundary.left
+		mov edx, [ecx].boundary.right
+		; TODO
+		.IF cur_right > ebx && cur_left < edx
+			mov [edi].is_y_collide, 1
+			sub eax, cur_bottom			; 移动距离为 brick.boundary.top - cur_bottom
+			mov [edi].y_need_move, eax
+			; mov eax, [ecx].brick_type
+			; mov [edi].collision_type, eax 
+		.ENDIF
+	.ENDIF
+
+	; 检测x
+	; 优先级：侧撞到砖块就不会撞到墙壁了
+	; 因此应该先检测墙壁再检测砖块
+	; 撞到左墙：player1.boundary.left + speed.x <(=) 0
+	; 撞到右墙：player1.boundary.right + speed.x >(=) 450
+	; 
+	cmp next_left, 0
+	jge right_wall
+	mov [edi].is_x_collide, 1
+	mov eax, 0
+	sub eax, cur_left
+	mov [edi].x_need_move, eax
+right_wall:
+	cmp next_right, my_window_width
+	jle return_main
+	mov [edi].is_x_collide, 1
+	mov eax, my_window_width
+	sub eax, cur_right
+	mov [edi].x_need_move, eax
+
+	; TODO：检测砖块
+return_main:
+	ret
+colliDetect endp
 
 movePlayer proc uses eax ebx ecx, addrPlayer1:DWORD
 	assume eax: PTR player
@@ -387,11 +519,11 @@ processKeyDown proc wParam:WPARAM
 		.ELSEIF wParam == VK_RIGHT
 			mov player1.speed.x,6
 		.ENDIF
-		.IF player1.speed.x < 0
-			mov player1.dir, dir_left
-		.ELSEIF player1.speed.x > 0
-			mov player1.dir, dir_right
-		.ENDIF
+		;.IF player1.speed.x < 0
+		;	mov player1.dir, dir_left
+		;.ELSEIF player1.speed.x > 0
+		;	mov player1.dir, dir_right
+		;.ENDIF
 	.ENDIF
 	ret
 processKeyDown endp

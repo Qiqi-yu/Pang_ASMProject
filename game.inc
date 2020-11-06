@@ -79,18 +79,17 @@ brick struct
 	brick_type          DWORD    0   ; 砖块类型
 brick ends
 
-; 足球类
-ball struct
-	pos           point    <>  ; 实时位置
-	bsize         point    <>  ; 球的形状，长宽相同
-	speed         SDWORD   0   ; 标量速度
-	bcoef         coef     <>  ; <cos, sin>，速度的分解
-	delta         point    <>  ; 每次计算得到的增量
-	counter       BYTE     0   ; 计数控制足球速度的衰减
-	is_static     BYTE     1   ; 1停止在地面上，0在空中飞行
-	cur_frame     BYTE     1   ; 球的当前帧数，取值0~4
-	frame_counter BYTE     0   ; 球的帧数累加变量，每次加到7就换一帧
-ball ends
+; 碰撞类
+collision struct
+	collision_type		DWORD	0	; 1: 普通砖块和左右墙面
+	cross				BYTE	0	; 检查区间是否跨区
+	cur_block			DWORD	0	; 当前所处块index
+	next_block			DWORD	0	; 加上speed后所处块index
+	is_x_collide		BYTE	0	; x方向是否碰撞
+	x_need_move			DWORD	0	; 如果x已经要碰上了（is_x_collide==1），应该移动多少
+	is_y_collide		BYTE	0	; y方向是否碰撞（在砖块上
+	y_need_move			DWORD	0	; 如果y已经要碰上了（is_y_collide==1），应该移动多少
+collision ends
 
 ; 游戏中常量
 .const
@@ -99,7 +98,7 @@ ball ends
 	brick_width		 EQU   120       ; 砖块水平宽度
 	brick_height	 EQU   24        ; 砖块竖直高度
 	brick_x_gap		 EQU   60
-	brick_y_gap		 EQU   64
+	brick_y_gap		 EQU   64		 ; 屏幕竖直分隔高度
 	brick_y_gap_in	 EQU   40
 
 	dir_top          EQU   8          ; 我们正常见到的上下左右
@@ -107,10 +106,8 @@ ball ends
 	dir_left         EQU   2
 	dir_right        EQU   1
 
-	ball_speed       EQU   25         ; 踢球后的初始速度
 	player_speed     EQU   4          ; 人的每个方向的初始速度
 
-	ball_speed_coef  EQU   6
 
 	wall_top_y       EQU   160         ; 四面边界的位置，和我们正常见到的上下左右一致
 	wall_down_y      EQU   775
@@ -136,6 +133,7 @@ ball ends
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
 	player1          player	  <<0, 10>, <32,32>,<0,0>,<0,32,0,32>,1,1,0,0,1,1,0>         ; 玩家1
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 0>)   ; 图内最多有11行砖块
+	cur_collision	 collision	<0, 0, 0, 0, 0, 0>				; 碰撞信息
 	game_over		 DWORD    0
 
 
@@ -143,14 +141,12 @@ ball ends
 	h_winpage2       DWORD    0          ; 玩家2胜利界面
 	h_guidepage      DWORD    0          ; 指南页面
 	player2_bitmap   DWORD    0          ; 玩家2的精灵图
-	ball_bitmap      DWORD    0          ; 球的位图
 	score_bitmap     DWORD    0          ; 分数位图
 	;gravity		     REAL4   0.03
 
 	
 	
 	player2          player <<760, 420>, <42, 77>,<0,0>,<0,32,0,32>,0,2,0,1,1,0>                     ; 玩家2
-	soccer           ball   <<575, 440>, <50, 50>,25,<0.0,0.0>,<0,0>,0,1,1,0>            ; 球
 	paintstruct      PAINTSTRUCT <>   ; 绘制结构体
 
 
@@ -187,14 +183,13 @@ ball ends
 		paintBricks		 PROTO :DWORD,:DWORD
 		initialBricks	 PROTO 
 		changeBricks 	 PROTO
+		colliDetect		 PROTO
 		;time             PROTO C
 		clock			 PROTO C
 
 		isColliding      PROTO :DWORD
-		paintBall        PROTO :DWORD,:DWORD
 		paintScore       PROTO :DWORD,:DWORD
 		movePlayer       PROTO :DWORD
-		moveBall		 PROTO
 		changePlayerPos  PROTO :DWORD,:DWORD
 		returnPlayerPos  PROTO :DWORD
 		getScore         PROTO
