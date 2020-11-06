@@ -81,12 +81,10 @@ brick ends
 
 ; 碰撞类
 collision struct
-	collision_type		DWORD	0	; 1: 普通砖块和左右墙面
-	cross				BYTE	0	; 检查区间是否跨区
-	cur_block			DWORD	0	; 当前所处块index
-	next_block			DWORD	0	; 加上speed后所处块index
+	collide_type		DWORD	0	; 1: 普通砖块和左右墙面 2: 尖刺和天花板
+	collide_index		DWORD	0	; 返回碰撞砖块index（0-11，记得取址时MUL TYPE bricks）
 	is_x_collide		BYTE	0	; x方向是否碰撞
-	x_need_move			DWORD	0	; 如果x已经要碰上了（is_x_collide==1），应该移动多少
+	x_need_move			SDWORD	0	; 如果x已经要碰上了（is_x_collide==1），应该移动多少
 	is_y_collide		BYTE	0	; y方向是否碰撞（在砖块上
 	y_need_move			SDWORD	0	; 如果y已经要碰上了（is_y_collide==1），应该移动多少
 collision ends
@@ -133,7 +131,7 @@ collision ends
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
 	player1          player	  <<0, 10>, <32,32>,<0,0>,<0,32,0,32>,1,1,0,0,1,1,0>         ; 玩家1
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 0>)   ; 图内最多有11行砖块
-	cur_collision	 collision	<0, 0, 0, 0, 0, 0, 0, 0>				; 碰撞信息
+	cur_collision	 collision	<0, 0, 0, 0, 0, 0>				; 碰撞信息
 	game_over		 DWORD    0
 
 
@@ -190,15 +188,11 @@ collision ends
 		isColliding      PROTO :DWORD
 		paintScore       PROTO :DWORD,:DWORD
 		movePlayer       PROTO :DWORD
-		changePlayerPos  PROTO :DWORD,:DWORD
-		returnPlayerPos  PROTO :DWORD
 		getScore         PROTO
 		gameOver         PROTO 
 		resetGame        PROTO
 		processKeyUp     PROTO :DWORD
 		processKeyDown   PROTO :DWORD
 		processCollide   PROTO
-		calDirection     PROTO :DWORD
-
 
 
