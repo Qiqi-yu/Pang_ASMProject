@@ -81,6 +81,7 @@ brick ends
 ; 碰撞类
 collision struct
 	collide_type		DWORD	0	; 1: 普通砖块和左右墙面 2: 尖刺和天花板
+	last_collide_type	DWORD	0	; 上次碰撞类型
 	collide_index		DWORD	0	; 返回碰撞砖块index（0-11，记得取址时MUL TYPE bricks）
 	is_x_collide		BYTE	0	; x方向是否碰撞
 	x_need_move			SDWORD	0	; 如果x已经要碰上了（is_x_collide==1），应该移动多少
@@ -129,11 +130,14 @@ collision ends
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零
 	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0,0>         ; 玩家1 初始生命值设为100
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
-	cur_collision	 collision	<0, 0, 0, 0, 0, 0>				; 碰撞信息
+	cur_collision	 collision	<0, 0, 0, 0, 0, 0, 0>				; 碰撞信息
 	game_over		 DWORD    0
 	;scoreStr		 DWORD     100 DUP(?)
 	score            DWORD    0
-	text             BYTE    "text", 0
+	buf              BYTE     20 DUP(0)
+	text             BYTE    "hp:%d,score:%d", 0
+	text1            BYTE    "%d",0
+	strlen           DWORD    0
 	;qwq              DWORD     "%d", 0
 	
 	h_winpage1       DWORD    0          ; 玩家1胜利界面
@@ -201,4 +205,4 @@ collision ends
 		processCollide   PROTO
 		startGame        PROTO
 		initPlayer       PROTO
-
+		getStringLength  PROTO :PTR BYTE

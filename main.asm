@@ -281,8 +281,9 @@ logicThread proc p:DWORD
 
 	; 结束界面
 	.WHILE game_status == 2
+		mov game_over,0
 		invoke Sleep, 30
-		mov game_over, 0
+
 	.ENDW
 
 	jmp game
@@ -455,10 +456,12 @@ changeBricks proc uses ecx esi edi ebx edx
 		.ELSEIF [edi].brick_kind == 11
 			mov [edi].brick_type, 5
 		.ENDIF
+		inc    player1.score
 	.ENDIF
 
 	mov	   ecx, lengthof bricks
 	mov	   edi, offset bricks
+	
 
 UP_BRICK:
 	dec		[edi].boundary.top
@@ -483,6 +486,8 @@ colliDetect proc uses eax ebx ecx esi edi edx
 	mov	edi, offset	cur_collision
 	mov	esi, offset player1
 
+	mov eax, [edi].collide_type
+	mov [edi].last_collide_type, eax
 	mov [edi].collide_type,0
 
 	; 计算当前左、右、下
@@ -652,22 +657,38 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	add [eax].pos.x,ebx
 	.ENDIF
 
-	.IF [edi].collide_type == 2
+
+	.IF [edi].collide_type == 2 && [edi].last_collide_type != 2
 	sub [eax].hp,prick_lose_hp
 	mov [eax].on_ice,0
 	mov [eax].on_conveyor,0
 
 	.ELSEIF [edi].collide_type == 3
+		.IF [edi].last_collide_type!=3
+			.IF [eax].hp < 100
+			add [eax].hp,5
+			.ENDIF
+		.ENDIF
 	mov [eax].on_ice,1
 	mov [eax].on_conveyor,0
 
 	.ELSEIF [edi].collide_type==4 
+		.IF [edi].last_collide_type!=4
+			.IF [eax].hp < 100
+			add [eax].hp,5
+			.ENDIF
+		.ENDIF
 	mov [eax].speed.x, conveyor_speed_left
 	;add [eax].speed.x,conveyor_speed_left
 	mov [eax].on_conveyor,1
 	mov [eax].on_ice,0
 
 	.ELSEIF [edi].collide_type==5
+		.IF [edi].last_collide_type!=5
+			.IF [eax].hp < 100
+			add [eax].hp,5
+			.ENDIF
+		.ENDIF
 	mov [eax].speed.x,conveyor_speed_right
 	;add [eax].speed.x,conveyor_speed_right
 	mov [eax].on_conveyor,2
@@ -677,6 +698,24 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	mov [eax].on_ice,0
 	mov [eax].on_conveyor,0
 	mov [eax].hp,0
+
+	.ELSEIF [edi].collide_type == 6
+	mov [eax].on_ice,0
+	mov [eax].on_conveyor,0
+		.IF [edi].last_collide_type!=6
+			.IF [eax].hp < 100
+			add [eax].hp,5
+			.ENDIF
+		.ENDIF
+
+	.ELSEIF [edi].collide_type == 1
+	mov [eax].on_ice,0
+	mov [eax].on_conveyor,0
+		.IF [edi].last_collide_type!=1
+			.IF [eax].hp < 100
+			add [eax].hp,5
+			.ENDIF
+		.ENDIF
 
 	.ELSE
 	mov [eax].on_ice,0
@@ -870,18 +909,46 @@ paintBricks endp
 
 paintScore proc member_hdc:HDC
     LOCAL rect :RECT
-	;mov rect.left, 0
-	;mov rect.right, 480
-	;mov rect.top, 0
-	;mov rect.bottom, 40
+	.IF game_status == 1
+	mov rect.left, 0
+	mov rect.right, 480
+	mov rect.top, 0
+	mov rect.bottom, 40
 
 	;mov eax, score
 	;invoke wsprintf, addr scoreStr, addr qwq, eax
 	mov    eax, offset text
-	invoke TextOutA,member_hdc,40,90,addr text,4
-	;invoke DrawText, member_hdc, addr text, -1,  addr rect,  DT_SINGLELINE or DT_CENTER or DT_VCENTER
+	invoke wsprintf,offset buf,offset text,player1.hp,player1.score
+	;invoke TextOutA,member_hdc,40,90,addr buf,strlen
+	.ELSEIF game_status == 2
+	mov rect.left, 0
+	mov rect.right, 480
+	mov rect.top, 200
+	mov rect.bottom, 300
+	mov    eax, offset text
+	invoke wsprintf,offset buf,offset text1,player1.score
+	.ENDIF
+
+	invoke getStringLength,offset buf
+	invoke DrawText, member_hdc, addr buf, -1,  addr rect,  DT_SINGLELINE or DT_CENTER or DT_VCENTER
 
 	ret
 paintScore endp
+
+getStringLength proc string:PTR BYTE
+	assume edi: PTR BYTE
+	mov edi,string
+	mov ecx,0
+L1:
+	mov al,[edi]
+	inc ecx
+	inc edi
+	cmp al,0
+	jne L1
+L2:
+	dec ecx
+	mov strlen,ecx
+	ret
+getStringLength endp
 
 end start
