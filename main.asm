@@ -127,16 +127,7 @@ MsgLoop endp
 WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 	; 处理窗口创建后的一些操作
 	.IF uMsg == WM_CREATE
-		; 加载位图资源
-		invoke loadGameImages
-		; 创造逻辑线程
-		mov eax, OFFSET logicThread
-		invoke CreateThread, NULL, NULL, eax, 0, 0, addr thread1
-		invoke CloseHandle, eax
-		; 创造绘制线程
-		mov eax, OFFSET paintThread
-		invoke CreateThread, NULL, NULL, eax, 0, 0, addr thread2
-		invoke CloseHandle, eax
+		invoke startGame
 
 	.ELSEIF uMsg == WM_DESTROY
 		; 退出线程
@@ -155,6 +146,7 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 				invoke initialBricks
 			.ELSEIF game_status == 2
 				mov game_status, 0
+				invoke startGame
 			.ENDIF
 		.ENDIF
 		; 处理esc键按下事件
@@ -178,6 +170,20 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 	xor eax, eax
 	ret
 WndProc endp
+
+startGame proc
+		; 加载位图资源
+		invoke loadGameImages
+		; 创造逻辑线程
+		mov eax, OFFSET logicThread
+		invoke CreateThread, NULL, NULL, eax, 0, 0, addr thread1
+		invoke CloseHandle, eax
+		; 创造绘制线程
+		mov eax, OFFSET paintThread
+		invoke CreateThread, NULL, NULL, eax, 0, 0, addr thread2
+		invoke CloseHandle, eax
+		ret
+startGame endp
 
 loadGameImages proc
 	; 加载开始界面的位图
@@ -627,7 +633,35 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 
 	.IF [edi].collide_type == 2
 	sub [eax].hp,prick_lose_hp
+	mov [eax].on_ice,0
+	mov [eax].on_conveyor,0
+
+	.ELSEIF [edi].collide_type == 3
+	mov [eax].on_ice,1
+	mov [eax].on_conveyor,0
+
+	.ELSEIF [edi].collide_type==4 
+	mov [eax].speed.x, conveyor_speed_left
+	;add [eax].speed.x,conveyor_speed_left
+	mov [eax].on_conveyor,1
+	mov [eax].on_ice,0
+
+	.ELSEIF [edi].collide_type==5
+	mov [eax].speed.x,conveyor_speed_right
+	;add [eax].speed.x,conveyor_speed_right
+	mov [eax].on_conveyor,2
+	mov [eax].on_ice,0
+
+	.ELSEIF [edi].collide_type==7
+	mov [eax].on_ice,0
+	mov [eax].on_conveyor,0
+	mov [eax].hp,0
+
+	.ELSE
+	mov [eax].on_ice,0
+	mov [eax].on_conveyor,0
 	.ENDIF
+
 
 	m2m [eax].boundary.left,[eax].pos.x
 	m2m [eax].boundary.top,[eax].pos.y
@@ -644,11 +678,21 @@ movePlayer endp
 
 processKeyDown proc wParam:WPARAM
 	.IF game_status == 1
-		.IF wParam == VK_LEFT
+		.IF wParam == VK_LEFT 
+			.IF player1.on_conveyor == 0
 			mov player1.speed.x,player_x_speed
 			neg player1.speed.x
+			;当在向右的传送带上时，向左的速度减缓
+			.ELSEIF player1.on_conveyor == 2
+			mov player1.speed.x,conveyor_speed_left
+			.ENDIF
 		.ELSEIF wParam == VK_RIGHT
+			.IF player1.on_conveyor == 0
 			mov player1.speed.x,player_x_speed
+			.ELSEIF player1.on_conveyor == 1
+			;当在向左的传送带上时，向右的速度减缓
+			mov player1.speed.x,conveyor_speed_right
+			.ENDIF
 		.ENDIF
 		;.IF player1.speed.x < 0
 		;	mov player1.dir, dir_left
@@ -661,9 +705,9 @@ processKeyDown endp
 
 processKeyUp proc wParam:WPARAM
 	.IF game_status == 1
-		.IF wParam == VK_LEFT
+		.IF wParam == VK_LEFT && (player1.on_ice == 0)
 			mov player1.speed.x,0
-		.ELSEIF wParam == VK_RIGHT
+		.ELSEIF wParam == VK_RIGHT  && (player1.on_ice == 0)
 			mov player1.speed.x,0
 		.ENDIF
 	.ENDIF
@@ -709,6 +753,7 @@ updateScene proc uses eax
 	; 将源矩形区域直接拷贝到目标区域：SRCCOPY
 	invoke BitBlt, hdc, 0, 0, my_window_width, my_window_height, member_hdc, 0, 0, SRCCOPY
 
+
 	invoke DeleteDC, member_hdc
 	invoke DeleteDC, member_hdc2
 	invoke DeleteObject, h_bitmap
@@ -721,13 +766,14 @@ updateScene endp
 
 ; 背景图片绘制函数
 paintBackground proc  member_hdc1:HDC, member_hdc2:HDC
+	
 	.IF game_status == 0
 		invoke SelectObject, member_hdc2,  h_startpage
 		invoke BitBlt, member_hdc1, 0, 0, my_window_width, my_window_height, member_hdc2, 0, 0, SRCCOPY
 	.ELSEIF game_status == 1
 		invoke SelectObject, member_hdc2,  h_gamepage
 		invoke BitBlt, member_hdc1, 0, 0, my_window_width, my_window_height, member_hdc2, 0, 0, SRCCOPY
-
+		
 	.ELSEIF game_status == 2
 		invoke SelectObject, member_hdc2,  h_endpage
 		invoke BitBlt, member_hdc1, 0, 0, my_window_width, my_window_height, member_hdc2, 0, 0, SRCCOPY

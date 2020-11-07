@@ -67,6 +67,8 @@ player struct
 	hp            DWORD 0     ;玩家的生命值  
 	dir           BYTE  1     ; 上8 下4 左2 右1
 	score         DWORD 0     ; 玩家得分，起初为0，最多为3
+	on_ice        BYTE 0	  ;0代表不在冰块上，1代表在冰块上
+	on_conveyor   BYTE 0	  ;0代表不在传送带上，1代表在向左的传动带上，2代表在向右的传送带上
 player ends
 
 ; 砖块类
@@ -95,6 +97,9 @@ collision ends
 	brick_x_gap		 EQU   60
 	brick_y_gap		 EQU   64		 ; 屏幕竖直分隔高度
 	brick_y_gap_in	 EQU   40
+	conveyor_speed_left	 EQU   -4
+	conveyor_speed_right EQU  4
+
 
 	dir_top          EQU   8          ; 我们正常见到的上下左右
 	dir_down         EQU   4
@@ -104,6 +109,7 @@ collision ends
 	player_height    EQU   32
 	player_x_speed   EQU   6          ;玩家x方向的速度
 	prick_lose_hp	 EQU   10          ;尖刺导致玩家失血
+
 
 	; initialized data allocation
 .data
@@ -121,7 +127,7 @@ collision ends
 	brick_conveyor_bitmap    DWORD    0             ; 传送砖块的位图
 	brick_ceiling_bitmap   DWORD    0          ; 天花板砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零
-	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0>         ; 玩家1 初始生命值设为100
+	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0,0>         ; 玩家1 初始生命值设为100
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
 	cur_collision	 collision	<0, 0, 0, 0, 0, 0>				; 碰撞信息
 	game_over		 DWORD    0
@@ -132,6 +138,7 @@ collision ends
 	h_guidepage      DWORD    0          ; 指南页面
 	player2_bitmap   DWORD    0          ; 玩家2的精灵图
 	score_bitmap     DWORD    0          ; 分数位图
+
 	;gravity		     REAL4   0.03
 
 	
@@ -180,7 +187,7 @@ collision ends
 		paintScore		 PROTO :DWORD
 
 		isColliding      PROTO :DWORD
-		paintScore       PROTO 
+		paintScore       PROTO
 		movePlayer       PROTO :DWORD
 		getScore         PROTO
 		gameOver         PROTO 
@@ -188,5 +195,5 @@ collision ends
 		processKeyUp     PROTO :DWORD
 		processKeyDown   PROTO :DWORD
 		processCollide   PROTO
-
+		startGame        PROTO
 
