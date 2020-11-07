@@ -126,7 +126,7 @@ collision ends
 	cur_collision	 collision	<0, 0, 0, 0, 0, 0>				; 碰撞信息
 	game_over		 DWORD    0
 	;OurText			 db    "text",0
-
+	;;
 	h_winpage1       DWORD    0          ; 玩家1胜利界面
 	h_winpage2       DWORD    0          ; 玩家2胜利界面
 	h_guidepage      DWORD    0          ; 指南页面
