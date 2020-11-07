@@ -52,13 +52,43 @@ END
 
 IDB_BITMAP_GAMEBG       BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\game_bg.bmp"
 
-IDB_BITMAP_BRICK        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\brick.bmp"
-
 IDB_BITMAP_STARTBG      BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\start_bg.bmp"
 
 IDB_BITMAP_PLAYER_LEFT  BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\player_left.bmp"
 
 IDB_BITMAP_PLAYER_RIGHT BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\player_right.bmp"
+
+IDB_BITMAP_NUM_0        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\num\\num0.bmp"
+
+IDB_BITMAP_ENDBG        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\end_bg.bmp"
+
+IDB_BITMAP_NUM_1        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\num\\num1.bmp"
+
+IDB_BITMAP_NUM_2        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\num\\num2.bmp"
+
+IDB_BITMAP_NUM_3        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\num\\num3.bmp"
+
+IDB_BITMAP_NUM_4        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\num\\num4.bmp"
+
+IDB_BITMAP_NUM_5        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\num\\num5.bmp"
+
+IDB_BITMAP_NUM_6        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\num\\num6.bmp"
+
+IDB_BITMAP_NUM_7        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\num\\num7.bmp"
+
+IDB_BITMAP_NUM_8        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\num\\num8.bmp"
+
+IDB_BITMAP_NUM_9        BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\num\\num9.bmp"
+
+IDB_BITMAP_BRICK_NORMAL BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\brick_normal.bmp"
+
+IDB_BITMAP_BRICK_ICY    BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\brick_icy.bmp"
+
+IDB_BITMAP_BRICK_SHARP  BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\brick_sharp.bmp"
+
+IDB_BITMAP_BRICK_FRAGILE BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\brick_fragile.bmp"
+
+IDB_BITMAP_BRICK_CONVEYOR BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\brick_conveyor.bmp"
 
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
