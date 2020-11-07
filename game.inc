@@ -91,8 +91,8 @@ collision ends
 
 ; 游戏中常量
 .const
-	my_window_width  EQU   490       ; 窗体水平宽度
-	my_window_height EQU   675       ; 窗体竖直高度
+	my_window_width  EQU   480       ; 窗体水平宽度
+	my_window_height EQU   640       ; 窗体竖直高度
 	brick_width		 EQU   120       ; 砖块水平宽度
 	brick_height	 EQU   24        ; 砖块竖直高度
 	brick_x_gap		 EQU   60
@@ -109,7 +109,7 @@ collision ends
 	
 	player_height    EQU   32
 	player_x_speed   EQU   6          ;玩家x方向的速度
-	prick_lose_hp	 EQU   10          ;尖刺导致玩家失血
+	prick_lose_hp	 EQU   1        ;尖刺导致玩家失血
 
 
 	; initialized data allocation
@@ -128,8 +128,10 @@ collision ends
 	brick_conveyor_bitmap    DWORD    0             ; 传送砖块的位图
 	brick_ceiling_bitmap   DWORD    0          ; 天花板砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零
+	;last_brick_col   DWORD    0
 	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0,0>         ; 玩家1 初始生命值设为100
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
+	bricks_tmp			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
 	cur_collision	 collision	<0, 0, 0, 0, 0, 0, 0>				; 碰撞信息
 	game_over		 DWORD    0
 	;scoreStr		 DWORD     100 DUP(?)
@@ -192,6 +194,7 @@ collision ends
 		;time             PROTO C
 		clock			 PROTO C
 		paintScore		 PROTO :DWORD
+		removeFragileBrick PROTO
 		;sprintf          PROTO C :ptr sbyte, :ptr sbyte, :VARARG
 
 		isColliding      PROTO :DWORD

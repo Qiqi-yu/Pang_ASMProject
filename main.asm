@@ -72,8 +72,8 @@ Main proc
   ; ---------------------------------------------
   ; set width and height abosulte length
   ; ---------------------------------------------
-    mov Wwd, my_window_width
-    mov Wht, my_window_height
+    mov Wwd, 490
+    mov Wht, 675
 
   ; ------------------------------------------------
   ; Top X and Y co-ordinates for the centered window
@@ -141,10 +141,10 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 		; 处理enter键按下事件
 		.IF wParam == 13
 			.IF game_status == 0
-				mov game_status, 1
 				mov player1.dir, dir_right
 				invoke initialBricks
 				invoke initPlayer
+				mov game_status, 1
 			.ELSEIF game_status == 2
 				mov game_status, 0
 			.ENDIF
@@ -258,7 +258,6 @@ logicThread proc p:DWORD
 	; 游戏界面
 	.WHILE game_status == 1
 
-
 		invoke Sleep, 30
 		; 重置计数器
 		.IF game_counter >= brick_y_gap
@@ -274,14 +273,12 @@ logicThread proc p:DWORD
 		; 角色移动
 		invoke movePlayer, addr player1
 
-		.IF game_over == 1
-			mov game_status, 2
-		.ENDIF
+		; 去除易碎砖块
+		invoke removeFragileBrick
 	.ENDW
 
 	; 结束界面
 	.WHILE game_status == 2
-		mov game_over,0
 		invoke Sleep, 30
 
 	.ENDW
@@ -306,7 +303,7 @@ initialBricks proc uses esi edx ecx eax ebx edi
 	assume esi:ptr brick
 
 	mov	   esi, offset bricks
-	mov    edi, 0
+	mov    edi, brick_y_gap_in  ; 40
 
 	; 将前三个砖块置于窗口外
 	mov	   empty_line_num, 3
@@ -316,13 +313,13 @@ emptyLine:
 		mov		[esi].boundary.left, eax
 		add		eax, brick_width
 		mov		[esi].boundary.right, eax
-		add		edi, brick_y_gap_in
 		mov		[esi].boundary.top, edi
-		add		edi, brick_height
+		add		edi, brick_height  ; + 24
 		mov		[esi].boundary.bottom, edi
-		add		esi, TYPE bricks
+		add		edi, brick_y_gap_in  ; + 40
 		mov		[esi].brick_kind, 0
 		mov		[esi].brick_type, 1
+		add		esi, TYPE bricks
 		loop	emptyLine
 
 	;生成第一个在中央的砖块
@@ -332,10 +329,10 @@ emptyLine:
 	mov		[esi].boundary.left, eax
 	add		eax, brick_width
 	mov		[esi].boundary.right, eax
-	add		edi, brick_y_gap_in
 	mov		[esi].boundary.top, edi
-	add		edi, brick_height
+	add		edi, brick_height     ; + 24
 	mov		[esi].boundary.bottom, edi
+	add		edi, brick_y_gap_in   ; + 40
 	mov		[esi].brick_kind, 0
 	mov		[esi].brick_type, 1
 	add		esi, TYPE bricks
@@ -346,11 +343,11 @@ emptyLine:
 L1:
 	    push	ecx
 		push	esi
+		push    edi
 		invoke	Sleep, 10
 		invoke	clock
+		pop     edi
 		pop		esi
-		pop		ecx
-		push	ecx
 		mov		edx, 0
 		mov		ecx, 7
 		div		ecx
@@ -361,17 +358,17 @@ L1:
 		mov		[esi].boundary.left, eax
 		add		eax, brick_width
 		mov		[esi].boundary.right, eax
-		add		edi, brick_y_gap_in
 		mov		[esi].boundary.top, edi
-		add		edi, brick_height
+		add		edi, brick_height   ; + 24
 		mov		[esi].boundary.bottom, edi
+		add		edi, brick_y_gap_in  ; + 40
 
-		push	ecx
 		push	esi
+		push    edi
 		invoke	Sleep, 10
 		invoke	clock
+		pop     edi
 		pop		esi
-		pop		ecx
 		mov		edx, 0
 		mov		ecx, 12
 		div		ecx
@@ -402,15 +399,16 @@ initialBricks endp
 ; 砖块更新函数
 changeBricks proc uses ecx esi edi ebx edx
 	assume edi:ptr brick
-
+	assume esi:ptr brick
 	mov	   edi, offset bricks
 
 	.IF game_counter >= brick_y_gap
 		cld
 		mov		esi, edi
 		add		esi, type bricks
+		mov	    edi, offset bricks_tmp
 		mov		ebx, 10			  ; 乘数    砖块数量
-		mov		eax, type bricks  ; 被乘数  20
+		mov		eax, type bricks  ; 被乘数
 		mul		ebx
 		mov		ecx, eax
 		rep		movsb
@@ -430,15 +428,14 @@ changeBricks proc uses ecx esi edi ebx edx
 		add		eax, brick_width
 		mov		[edi].boundary.right, eax
 		mov		eax, my_window_height
+		add     eax, 40
 		mov		[edi].boundary.top, eax
 		add		eax, brick_height
 		mov		[edi].boundary.bottom, eax
 
-		push	ecx
 		push	edi
 		invoke	clock
 		pop		edi
-		pop		ecx
 		mov		edx, 0
 		mov		ecx, 12
 		div		ecx
@@ -457,11 +454,20 @@ changeBricks proc uses ecx esi edi ebx edx
 			mov [edi].brick_type, 5
 		.ENDIF
 		inc    player1.score
+
+		cld
+		mov		esi, offset bricks_tmp
+		mov	    edi, offset bricks
+		mov		ebx, 11			  ; 乘数    砖块数量
+		mov		eax, type bricks  ; 被乘数
+		mul		ebx
+		mov		ecx, eax
+		rep		movsb
 	.ENDIF
 
 	mov	   ecx, lengthof bricks
 	mov	   edi, offset bricks
-	
+
 
 UP_BRICK:
 	dec		[edi].boundary.top
@@ -621,6 +627,22 @@ endgame_detect:
 	ret
 colliDetect endp
 
+removeFragileBrick proc uses ebx esi
+	.IF cur_collision.collide_type == 6
+		mov		ebx, cur_collision.collide_index
+		dec     ebx
+		mov		eax, TYPE bricks
+		mul		ebx
+		mov		esi, offset bricks
+		add		esi, eax
+		mov	    eax, my_window_width
+		mov		[esi].boundary.left, eax
+		add		eax, brick_width
+		mov		[esi].boundary.right, eax
+	.ENDIF
+	ret
+removeFragileBrick endp
+
 movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	assume eax: PTR player
 	assume edi: PTR collision
@@ -658,7 +680,7 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	.ENDIF
 
 
-	.IF [edi].collide_type == 2 && [edi].last_collide_type != 2
+	.IF [edi].collide_type == 2 ;&& [edi].last_collide_type != 2
 	sub [eax].hp,prick_lose_hp
 	mov [eax].on_ice,0
 	mov [eax].on_conveyor,0
@@ -875,7 +897,7 @@ paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
 paintPlayers endp
 
 ; 砖块绘制函数
-paintBricks proc uses edi edx ecx, member_hdc1:HDC, member_hdc2:HDC
+paintBricks proc uses edi ecx, member_hdc1:HDC, member_hdc2:HDC
 	assume edi:ptr brick
 	.IF game_status == 1
 		mov	   ecx, lengthof bricks
