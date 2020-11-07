@@ -244,6 +244,8 @@ logicThread proc p:DWORD
 
 	; 游戏界面
 	.WHILE game_status == 1
+		
+
 		invoke Sleep, 30
 		; 重置计数器
 		.IF game_counter >= brick_y_gap
@@ -438,6 +440,7 @@ changeBricks proc uses ecx esi edi ebx edx
 	.ENDIF
 
 	mov	   ecx, lengthof bricks
+	mov	   edi, offset bricks
 
 UP_BRICK:
 	dec		[edi].boundary.top
@@ -724,6 +727,7 @@ updateScene proc uses eax
 
 	invoke BeginPaint, hWnd, ADDR paintstruct
 	mov hdc, eax
+
 	invoke CreateCompatibleDC, hdc
 	mov member_hdc, eax
 	invoke CreateCompatibleDC, hdc
@@ -746,7 +750,7 @@ updateScene proc uses eax
     ;绘制人物
 	invoke paintPlayers, member_hdc, member_hdc2
 
-    ;绘制分数
+	;绘制分数
 	invoke paintScore, member_hdc
 
 	; BitBlt（hDestDC, x, y, nWidth, nheight, hSrcDC, xSrc, ySrc, dwRop）
@@ -811,7 +815,7 @@ paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
 paintPlayers endp
 
 ; 砖块绘制函数
-paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC
+paintBricks proc uses edi edx ecx, member_hdc1:HDC, member_hdc2:HDC
 	assume edi:ptr brick
 	.IF game_status == 1
 		mov	   ecx, lengthof bricks
@@ -844,12 +848,18 @@ paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC
 paintBricks endp
 
 paintScore proc member_hdc:HDC
-    ;LOCAL rect :RECT
+    LOCAL rect :RECT
 	;mov rect.left, 0
 	;mov rect.right, 480
 	;mov rect.top, 0
 	;mov rect.bottom, 40
-	;invoke DrawText, member_hdc, ADDR OurText, -1,  ADDR rect,  DT_SINGLELINE or DT_CENTER or DT_VCENTER
+
+	;mov eax, score
+	;invoke wsprintf, addr scoreStr, addr qwq, eax
+	mov    eax, offset text
+	invoke TextOutA,member_hdc,40,90,addr text,4
+	;invoke DrawText, member_hdc, addr text, -1,  addr rect,  DT_SINGLELINE or DT_CENTER or DT_VCENTER
+	
 	ret
 paintScore endp
 

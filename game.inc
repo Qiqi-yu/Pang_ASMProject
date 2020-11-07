@@ -131,8 +131,11 @@ collision ends
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
 	cur_collision	 collision	<0, 0, 0, 0, 0, 0>				; 碰撞信息
 	game_over		 DWORD    0
-	;OurText			 db    "text",0
-
+	;scoreStr		 DWORD     100 DUP(?)
+	score            DWORD    0
+	text             BYTE    "text", 0
+	;qwq              DWORD     "%d", 0
+	
 	h_winpage1       DWORD    0          ; 玩家1胜利界面
 	h_winpage2       DWORD    0          ; 玩家2胜利界面
 	h_guidepage      DWORD    0          ; 指南页面
@@ -185,6 +188,7 @@ collision ends
 		;time             PROTO C
 		clock			 PROTO C
 		paintScore		 PROTO :DWORD
+		;sprintf          PROTO C :ptr sbyte, :ptr sbyte, :VARARG
 
 		isColliding      PROTO :DWORD
 		paintScore       PROTO
