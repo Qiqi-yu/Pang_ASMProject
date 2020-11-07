@@ -304,6 +304,9 @@ initialBricks proc uses esi edx ecx eax ebx edi
 
 	mov	   esi, offset bricks
 	mov    edi, brick_y_gap_in  ; 40
+	mov	   game_counter, 0
+	invoke clock
+	invoke srand, eax
 
 	; 将前三个砖块置于窗口外
 	mov	   empty_line_num, 3
@@ -344,8 +347,9 @@ L1:
 	    push	ecx
 		push	esi
 		push    edi
-		invoke	Sleep, 10
-		invoke	clock
+		; invoke	Sleep, 10
+		invoke  rand
+		; invoke	clock
 		pop     edi
 		pop		esi
 		mov		edx, 0
@@ -365,7 +369,7 @@ L1:
 
 		push	esi
 		push    edi
-		invoke	Sleep, 10
+		invoke	Sleep, 14
 		invoke	clock
 		pop     edi
 		pop		esi
@@ -402,6 +406,9 @@ changeBricks proc uses ecx esi edi ebx edx
 	assume esi:ptr brick
 	mov	   edi, offset bricks
 
+	invoke clock
+	invoke srand, eax
+
 	.IF game_counter >= brick_y_gap
 		cld
 		mov		esi, edi
@@ -414,7 +421,8 @@ changeBricks proc uses ecx esi edi ebx edx
 		rep		movsb
 		;生成一个新的砖块
 		push	edi
-		invoke	clock
+		invoke  rand
+		;invoke	clock
 		pop		edi
 		mov		edx, 0
 		mov		ecx, 7
@@ -434,7 +442,10 @@ changeBricks proc uses ecx esi edi ebx edx
 		mov		[edi].boundary.bottom, eax
 
 		push	edi
-		invoke	clock
+		
+		;invoke	rand
+		invoke  Sleep, 7
+		invoke  clock
 		pop		edi
 		mov		edx, 0
 		mov		ecx, 12
@@ -468,11 +479,12 @@ changeBricks proc uses ecx esi edi ebx edx
 	mov	   ecx, lengthof bricks
 	mov	   edi, offset bricks
 
-
 UP_BRICK:
-	dec		[edi].boundary.top
-	dec		[edi].boundary.bottom
-	add		edi, TYPE bricks
+	sub		[edi].boundary.top, brick_up_speed
+	;dec		[edi].boundary.top
+	sub		[edi].boundary.bottom, brick_up_speed
+	;dec		[edi].boundary.bottom
+	add		edi, TYPE brick
 	loop	UP_BRICK
 
 	ret
@@ -507,8 +519,10 @@ colliDetect proc uses eax ebx ecx esi edi edx
 	mov cur_bottom, eax
 
 	.IF [edi].is_y_collide == 1
-		dec cur_top
-		dec cur_bottom
+		sub cur_top, brick_up_speed
+		; dec cur_top
+		sub cur_bottom, brick_up_speed
+		; dec cur_bottom
 	.ENDIF
 
 	; 计算考虑速度后的左、右、下
@@ -519,7 +533,8 @@ colliDetect proc uses eax ebx ecx esi edi edx
 	mov next_right, eax
 	mov eax, cur_top
 	add eax, [esi].speed.y
-	inc eax
+	add eax, brick_up_speed
+	;inc eax
 	mov next_top, eax
 	add eax, [esi].psize.y
 	mov next_bottom, eax
@@ -559,14 +574,16 @@ collide_y:
 	mov edx, offset bricks
 	add edx, eax
 	mov ecx, [edx].boundary.top
-	inc ecx
+	; inc ecx
+	add ecx, brick_up_speed
 	mov ebx, [edx].boundary.left
 	mov eax, [edx].boundary.right
 	; 检测是否穿越砖块
 	.IF (cur_bottom <= ecx && next_bottom >= ecx) && ((cur_right > ebx && cur_left < eax) ||  (next_right > ebx && next_left < eax))
 		mov [edi].is_y_collide, 1
 		sub ecx, cur_bottom
-		dec ecx							; 移动距离为 brick.boundary.top - cur_bottom - 1
+		sub ecx, brick_up_speed
+		;dec ecx							; 移动距离为 brick.boundary.top - cur_bottom - 1
 		mov [edi].y_need_move, ecx
 		mov ecx, [edx].brick_type
 		mov [edi].collide_type, ecx		; 记录碰撞砖块类型
@@ -742,6 +759,10 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	.ELSE
 	mov [eax].on_ice,0
 	mov [eax].on_conveyor,0
+	.ENDIF
+
+	.IF [eax].hp > 100
+	mov [eax].hp,100
 	.ENDIF
 
 	.IF [eax].hp <= 0
@@ -932,10 +953,10 @@ paintBricks endp
 paintScore proc member_hdc:HDC
     LOCAL rect :RECT
 	.IF game_status == 1
-	mov rect.left, 0
+	mov rect.left, 320
 	mov rect.right, 480
-	mov rect.top, 0
-	mov rect.bottom, 40
+	mov rect.top, 30
+	mov rect.bottom, 45
 
 	;mov eax, score
 	;invoke wsprintf, addr scoreStr, addr qwq, eax
@@ -957,7 +978,7 @@ paintScore proc member_hdc:HDC
 	ret
 paintScore endp
 
-getStringLength proc string:PTR BYTE
+getStringLength proc uses edi ecx eax, string:PTR BYTE
 	assume edi: PTR BYTE
 	mov edi,string
 	mov ecx,0

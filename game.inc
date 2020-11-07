@@ -96,11 +96,13 @@ collision ends
 	brick_width		 EQU   120       ; 砖块水平宽度
 	brick_height	 EQU   24        ; 砖块竖直高度
 	brick_x_gap		 EQU   60
-	brick_y_gap		 EQU   64		 ; 屏幕竖直分隔高度
+	brick_up_speed	 EQU   4			; TODO: 改成变量，根据游戏进程更改
+	brick_y_gap		 EQU   64/brick_up_speed		 ; 屏幕竖直分隔高度
 	brick_y_gap_in	 EQU   40
 	conveyor_speed_left	 EQU   -4
 	conveyor_speed_right EQU  4
 
+	
 
 	dir_top          EQU   8          ; 我们正常见到的上下左右
 	dir_down         EQU   4
@@ -133,6 +135,7 @@ collision ends
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
 	bricks_tmp			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
 	cur_collision	 collision	<0, 0, 0, 0, 0, 0, 0>				; 碰撞信息
+
 	game_over		 DWORD    0
 	;scoreStr		 DWORD     100 DUP(?)
 	score            DWORD    0
@@ -195,6 +198,8 @@ collision ends
 		clock			 PROTO C
 		paintScore		 PROTO :DWORD
 		removeFragileBrick PROTO
+		rand			 PROTO C
+		srand			 PROTO C: DWORD
 		;sprintf          PROTO C :ptr sbyte, :ptr sbyte, :VARARG
 
 		isColliding      PROTO :DWORD
