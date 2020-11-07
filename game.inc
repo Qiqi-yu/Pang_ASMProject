@@ -112,8 +112,14 @@ collision ends
 	h_endpage        DWORD    0          ; 结束界面
 	player_left_bitmap    DWORD    0          ; 玩家向左的位图
 	player_right_bitmap   DWORD    0          ; 玩家向右的位图
-	brick_bitmap     DWORD    0          ; 砖块的位图
-	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
+
+	brick_normal_bitmap    DWORD    0          ; 普通砖块的位图
+	brick_icy_bitmap    DWORD    0             ; 光滑砖块的位图
+	brick_sharp_bitmap    DWORD    0             ; 锋利砖块的位图
+	brick_fragile_bitmap    DWORD    0             ; 易碎砖块的位图
+	brick_conveyor_bitmap    DWORD    0             ; 传送砖块的位图
+	brick_ceiling_bitmap   DWORD    0          ; 天花板砖块的位图
+	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零
 	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0>         ; 玩家1 初始生命值设为100
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 0>)   ; 图内最多有11行砖块
 	cur_collision	 collision	<0, 0, 0, 0, 0, 0>				; 碰撞信息
@@ -164,6 +170,7 @@ collision ends
 		paintThread      PROTO :DWORD
 		paintPlayers     PROTO :DWORD,:DWORD
 		paintBricks		 PROTO :DWORD,:DWORD
+		paintCeiling	 PROTO :DWORD,:DWORD
 		initialBricks	 PROTO 
 		changeBricks 	 PROTO
 		colliDetect		 PROTO
