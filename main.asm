@@ -744,6 +744,10 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	mov [eax].on_conveyor,0
 	.ENDIF
 
+	.IF [eax].hp > 100
+	mov [eax].hp,100
+	.ENDIF
+
 	.IF [eax].hp <= 0
 	mov game_status,2
 	.ENDIF
@@ -932,10 +936,10 @@ paintBricks endp
 paintScore proc member_hdc:HDC
     LOCAL rect :RECT
 	.IF game_status == 1
-	mov rect.left, 0
+	mov rect.left, 320
 	mov rect.right, 480
-	mov rect.top, 0
-	mov rect.bottom, 40
+	mov rect.top, 30
+	mov rect.bottom, 45
 
 	;mov eax, score
 	;invoke wsprintf, addr scoreStr, addr qwq, eax
@@ -957,7 +961,7 @@ paintScore proc member_hdc:HDC
 	ret
 paintScore endp
 
-getStringLength proc string:PTR BYTE
+getStringLength proc uses edi ecx eax, string:PTR BYTE
 	assume edi: PTR BYTE
 	mov edi,string
 	mov ecx,0
