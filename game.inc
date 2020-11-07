@@ -134,6 +134,7 @@ collision ends
 	brick_sharp_bitmap     DWORD    0          ; 锋利砖块的位图
 	brick_fragile_bitmap     DWORD    0          ; 易碎砖块的位图
 	brick_conveyor_bitmap     DWORD    0          ; 传送砖块的位图
+	brick_ceiling_bitmap     DWORD    0          ; 天花板砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
 	player1          player	  <<0, 10>, <32,32>,<0,0>,<0,32,0,32>,1,1,0,0,1,1,0>         ; 玩家1
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 0>)   ; 图内最多有11行砖块
@@ -180,6 +181,7 @@ collision ends
         Main             PROTO
 		loadGameImages   PROTO
 		paintBackground  PROTO :DWORD,:DWORD
+		paintCeiling	 PROTO :DWORD,:DWORD
 		updateScene      PROTO
 		logicThread      PROTO :DWORD
 		paintThread      PROTO :DWORD

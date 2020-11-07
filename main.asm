@@ -219,6 +219,11 @@ loadGameImages proc
 	; 加载传送砖块的位图
 	invoke LoadBitmap, hInstance, 145
 	mov brick_conveyor_bitmap, eax
+
+	; 加载天花板砖块的位图
+	invoke LoadBitmap, hInstance, 146
+	mov brick_ceiling_bitmap, eax
+
 	ret
 loadGameImages endp
 
@@ -648,6 +653,9 @@ updateScene proc uses eax
     ;绘制砖块
 	invoke paintBricks, member_hdc, member_hdc2
 
+	;绘制天花板
+	invoke paintCeiling, member_hdc, member_hdc2
+
     ;绘制人物
 	invoke paintPlayers, member_hdc, member_hdc2
 
@@ -664,6 +672,9 @@ updateScene proc uses eax
 	ret
 updateScene endp
 
+
+
+
 ; 背景图片绘制函数
 paintBackground proc  member_hdc1:HDC, member_hdc2:HDC
 	.IF game_status == 0
@@ -672,13 +683,28 @@ paintBackground proc  member_hdc1:HDC, member_hdc2:HDC
 	.ELSEIF game_status == 1
 		invoke SelectObject, member_hdc2,  h_gamepage
 		invoke BitBlt, member_hdc1, 0, 0, my_window_width, my_window_height, member_hdc2, 0, 0, SRCCOPY
+		
 	.ELSEIF game_status == 2
 		invoke SelectObject, member_hdc2,  h_endpage
 		invoke BitBlt, member_hdc1, 0, 0, my_window_width, my_window_height, member_hdc2, 0, 0, SRCCOPY
 	.ENDIF
-
 	ret
 paintBackground endp
+
+paintCeiling proc uses ecx, member_hdc1:HDC, member_hdc2:HDC 
+	.IF game_status == 1
+		invoke SelectObject, member_hdc2, brick_ceiling_bitmap
+		mov	eax, 0
+		mov ecx, 4
+	paint:
+		pushad
+		invoke TransparentBlt, member_hdc1, eax, 0, brick_width, brick_height, member_hdc2, 0, 0, brick_width, brick_height, 16777215
+		popad
+		add	   eax, brick_width
+		loop paint
+	.ENDIF
+	ret
+paintCeiling endp
 
 ; 游戏主角绘制函数
 paintPlayers proc member_hdc1: HDC, member_hdc2:HDC

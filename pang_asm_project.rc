@@ -90,6 +90,8 @@ IDB_BITMAP_BRICK_FRAGILE BITMAP                  "C:\\Users\\86181\\Desktop\\asm
 
 IDB_BITMAP_BRICK_CONVEYOR BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\brick_conveyor.bmp"
 
+IDB_BITMAP_BRICK_CEILING BITMAP                  "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Images\\brick_ceiling.bmp"
+
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
