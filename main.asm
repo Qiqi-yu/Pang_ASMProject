@@ -147,7 +147,6 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 				invoke initPlayer
 			.ELSEIF game_status == 2
 				mov game_status, 0
-				invoke startGame
 			.ENDIF
 		.ENDIF
 		; 处理esc键按下事件
@@ -283,7 +282,7 @@ logicThread proc p:DWORD
 	; 结束界面
 	.WHILE game_status == 2
 		invoke Sleep, 30
-
+		mov game_over, 0
 	.ENDW
 
 	jmp game
@@ -313,7 +312,7 @@ initialBricks proc uses esi edx ecx eax ebx edi
 	mov	   ecx, empty_line_num
 emptyLine:
 		mov	    eax, my_window_width
-		mov		[esi].boundary.left, my_window_width
+		mov		[esi].boundary.left, eax
 		add		eax, brick_width
 		mov		[esi].boundary.right, eax
 		add		edi, brick_y_gap_in
@@ -321,7 +320,10 @@ emptyLine:
 		add		edi, brick_height
 		mov		[esi].boundary.bottom, edi
 		add		esi, TYPE bricks
+		mov		[esi].brick_kind, 0
+		mov		[esi].brick_type, 1
 		loop	emptyLine
+
 	;生成第一个在中央的砖块
 	mov		eax, my_window_width
 	sub		eax, brick_width
@@ -333,6 +335,8 @@ emptyLine:
 	mov		[esi].boundary.top, edi
 	add		edi, brick_height
 	mov		[esi].boundary.bottom, edi
+	mov		[esi].brick_kind, 0
+	mov		[esi].brick_type, 1
 	add		esi, TYPE bricks
 
 	mov	   ecx, lengthof bricks
