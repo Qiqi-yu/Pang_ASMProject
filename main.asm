@@ -382,7 +382,7 @@ changeBricks proc uses ecx esi edi ebx edx
 		mov		ebx, edx		; 乘数 砖块的列数
 		mov		eax, brick_x_gap  ; 被乘数  75
 		mul		ebx
-		
+
 		mov		[edi].boundary.left, eax
 		add		eax, brick_width
 		mov		[edi].boundary.right, eax
@@ -430,7 +430,7 @@ colliDetect proc uses eax ebx ecx esi edi edx
 
 	; 计算当前左、右、下
 	mov eax, [esi].pos.x
-	mov cur_left, eax 
+	mov cur_left, eax
 	add eax, [esi].psize.x
 	mov cur_right, eax
 	mov eax, [esi].pos.y
@@ -503,7 +503,7 @@ collide_y:
 	; 检测是否穿越砖块
 	.IF (cur_bottom <= ecx && next_bottom >= ecx) && ((cur_right > ebx && cur_left < eax) ||  (next_right > ebx && next_left < eax))
 		mov [edi].is_y_collide, 1
-		sub ecx, cur_bottom   
+		sub ecx, cur_bottom
 		dec ecx							; 移动距离为 brick.boundary.top - cur_bottom - 1
 		mov [edi].y_need_move, ecx
 		mov ecx, [edx].brick_type
@@ -511,7 +511,7 @@ collide_y:
 		pop ecx
 		mov [edi].collide_index, ecx	; 记录碰撞砖块index
 		push ecx
-		; jmp endgame_detect				
+		; jmp endgame_detect
 	.ENDIF
 	pop ecx
 	loop collide_y
@@ -519,7 +519,7 @@ collide_y:
 	mov ecx, 11
 
 	; 侧撞砖块
-collide_x:	
+collide_x:
 	push ecx
 	mov ebx, ecx
 	mov eax, SIZEOF brick
@@ -541,12 +541,166 @@ collide_x:
 		.IF (cur_right <= ecx && next_right > ecx) && ((cur_bottom <= eax && next_bottom > eax) || (cur_top <= ebx && next_top > ebx))
 			mov [edi].is_x_collide, 1
 			sub ecx, cur_right
-			mov [edi].x_need_move, ecx 
+			mov [edi].x_need_move, ecx
 		.ENDIF
 	.ENDIF
 	pop ecx
 	loop collide_x
-	
+
+
+; 检测是否掉出画面(next_top > my_window_height)
+endgame_detect:
+	.IF next_top > my_window_height
+		mov [edi].is_y_collide, 1
+		mov [edi].collide_type, 7			; 7表掉出画面
+	.ENDIF
+
+UP_BRICK:
+	dec		[edi].boundary.top
+	dec		[edi].boundary.bottom
+	add		edi, TYPE bricks
+	loop	UP_BRICK
+
+	ret
+changeBricks endp
+
+colliDetect proc uses eax ebx ecx esi edi edx
+	assume esi: PTR player, edi: PTR collision, edx: PTR brick
+	LOCAL cur_top:SDWORD
+	LOCAL cur_left:SDWORD
+	LOCAL cur_right:SDWORD
+	LOCAL cur_bottom:SDWORD
+	LOCAL next_top:SDWORD
+	LOCAL next_left:SDWORD
+	LOCAL next_right:SDWORD
+	LOCAL next_bottom:SDWORD
+
+	mov	edi, offset	cur_collision
+	mov	esi, offset player1
+
+	mov [edi].collide_type,0
+
+	; 计算当前左、右、下
+	mov eax, [esi].pos.x
+	mov cur_left, eax
+	add eax, [esi].psize.x
+	mov cur_right, eax
+	mov eax, [esi].pos.y
+	mov cur_top, eax
+	add eax, [esi].psize.y
+	mov cur_bottom, eax
+
+	.IF [edi].is_y_collide == 1
+		dec cur_top
+		dec cur_bottom
+	.ENDIF
+
+	; 计算考虑速度后的左、右、下
+	mov eax, cur_left
+	add eax, [esi].speed.x
+	mov next_left, eax
+	add eax, [esi].psize.x
+	mov next_right, eax
+	mov eax, cur_top
+	add eax, [esi].speed.y
+	inc eax
+	mov next_top, eax
+	add eax, [esi].psize.y
+	mov next_bottom, eax
+
+	; 检测x
+	; 优先级：侧撞到砖块就不会撞到墙壁了
+	; 因此应该先检测墙壁再检测砖块
+	; 撞到左墙：next_left < 0
+	; 撞到右墙：next_right > my_window_width
+	mov [edi].is_x_collide, 0
+	.IF next_left < 0
+		mov [edi].is_x_collide, 1
+		mov eax, 0
+		sub eax, cur_left
+		mov [edi].x_need_move, eax
+		; mov [edi].collide_type, 1
+	.ELSEIF next_right > my_window_width
+		mov [edi].is_x_collide, 1
+		mov eax, my_window_width
+		sub eax, cur_right
+		mov [edi].x_need_move, eax
+		; mov [edi].collide_type, 1
+	.ENDIF
+
+
+
+	; 由前往后循环检测是否和砖块碰撞
+	mov ecx, 11
+	mov [edi].is_y_collide, 0
+
+collide_y:
+	push ecx
+	mov ebx, ecx
+	mov eax, SIZEOF brick
+	mul ebx			; eax 存偏移
+	; mul 改变 edx，因此需要先求edx = offset bricks
+	mov edx, offset bricks
+	add edx, eax
+	mov ecx, [edx].boundary.top
+	inc ecx
+	mov ebx, [edx].boundary.left
+	mov eax, [edx].boundary.right
+	; 检测是否穿越砖块
+	.IF (cur_bottom <= ecx && next_bottom >= ecx) && ((cur_right > ebx && cur_left < eax) ||  (next_right > ebx && next_left < eax))
+		mov [edi].is_y_collide, 1
+		sub ecx, cur_bottom
+		dec ecx							; 移动距离为 brick.boundary.top - cur_bottom - 1
+		mov [edi].y_need_move, ecx
+		mov ecx, [edx].brick_type
+		mov [edi].collide_type, ecx		; 记录碰撞砖块类型
+		pop ecx
+		mov [edi].collide_index, ecx	; 记录碰撞砖块index
+		push ecx
+		; jmp endgame_detect
+	.ENDIF
+	pop ecx
+	loop collide_y
+
+	mov ecx, 11
+
+	; 侧撞砖块
+collide_x:
+	push ecx
+	mov ebx, ecx
+	mov eax, SIZEOF brick
+	mul ebx			; eax 存偏移
+	; mul 改变 edx，因此需要先求edx = offset bricks
+	mov edx, offset bricks
+	add edx, eax
+	mov ebx, [edx].boundary.top
+	mov eax, [edx].boundary.bottom
+	.IF [esi].speed.x < 0
+		 mov ecx, [edx].boundary.right
+		.IF (cur_left >= ecx && next_left < ecx) && ((cur_bottom <= eax && next_bottom > eax) || (cur_top <= ebx && next_top > ebx))
+			mov [edi].is_x_collide, 1
+			sub ecx, cur_left
+			mov [edi].x_need_move, ecx
+		.ENDIF
+	.ELSEIF [esi].speed.x > 0
+		mov ecx, [edx].boundary.left
+		.IF (cur_right <= ecx && next_right > ecx) && ((cur_bottom <= eax && next_bottom > eax) || (cur_top <= ebx && next_top > ebx))
+			mov [edi].is_x_collide, 1
+			sub ecx, cur_right
+			mov [edi].x_need_move, ecx
+		.ENDIF
+	.ENDIF
+	pop ecx
+	loop collide_x
+
+	; 检测y
+	; 检测是否碰到上方尖刺（cur_top <= brick_height）
+	; 上方碰到尖刺后将自动下落
+	;.IF cur_top <= brick_height
+	.IF cur_top <= brick_height
+		mov [edi].is_y_collide, 0
+		mov [edi].collide_type, 2		; 2表示碰到尖刺
+	.ENDIF
 
 ; 检测是否掉出画面(next_top > my_window_height)
 endgame_detect:
@@ -584,8 +738,18 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 
 	.ENDIF
 
+	.IF [edi].is_x_collide == 0
 	mov ebx,[eax].speed.x
 	add [eax].pos.x,ebx
+	.ELSE
+	mov [eax].speed.x,0
+	mov ebx,[edi].x_need_move
+	add [eax].pos.x,ebx
+	.ENDIF
+
+	.IF [edi].collide_type == 2
+	sub [eax].hp,prick_lose_hp
+	.ENDIF
 
 	m2m [eax].boundary.left,[eax].pos.x
 	m2m [eax].boundary.top,[eax].pos.y
@@ -603,9 +767,10 @@ movePlayer endp
 processKeyDown proc wParam:WPARAM
 	.IF game_status == 1
 		.IF wParam == VK_LEFT
-			mov player1.speed.x,-6
+			mov player1.speed.x,player_x_speed
+			neg player1.speed.x
 		.ELSEIF wParam == VK_RIGHT
-			mov player1.speed.x,6
+			mov player1.speed.x,player_x_speed
 		.ENDIF
 		;.IF player1.speed.x < 0
 		;	mov player1.dir, dir_left
@@ -683,7 +848,7 @@ paintBackground proc  member_hdc1:HDC, member_hdc2:HDC
 	.ELSEIF game_status == 1
 		invoke SelectObject, member_hdc2,  h_gamepage
 		invoke BitBlt, member_hdc1, 0, 0, my_window_width, my_window_height, member_hdc2, 0, 0, SRCCOPY
-		
+
 	.ELSEIF game_status == 2
 		invoke SelectObject, member_hdc2,  h_endpage
 		invoke BitBlt, member_hdc1, 0, 0, my_window_width, my_window_height, member_hdc2, 0, 0, SRCCOPY
@@ -691,7 +856,7 @@ paintBackground proc  member_hdc1:HDC, member_hdc2:HDC
 	ret
 paintBackground endp
 
-paintCeiling proc uses ecx, member_hdc1:HDC, member_hdc2:HDC 
+paintCeiling proc uses ecx, member_hdc1:HDC, member_hdc2:HDC
 	.IF game_status == 1
 		invoke SelectObject, member_hdc2, brick_ceiling_bitmap
 		mov	eax, 0

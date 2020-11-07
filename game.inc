@@ -63,20 +63,16 @@ player struct
 	pos           point <>    ; 玩家的窗口坐标位置
 	psize         point <>    ; 玩家的形状，长度和宽度，方向改变时，这个变量会变
 	speed         point <>    ; 玩家的x,y速度 x速度向左为正，y速度向下为正
-	boundary      box <>	  ; 玩家的窗口边界
+	boundary      box <>	  ;玩家的窗口边界
+	hp            DWORD 0     ;玩家的生命值  
 	dir           BYTE  1     ; 上8 下4 左2 右1
-	bmp_dir       BYTE  0     ; 位图的方向，4个bit中只能同时有1位为1，取决于运动时哪个键先被按下
 	score         DWORD 0     ; 玩家得分，起初为0，最多为3
-	is_y_collide  BYTE  0     ; y方向是否碰撞（在砖块上）
-	is_static     BYTE  0     ; 是否处于静止状态
-	cur_frame     BYTE  0     ; 处于运动状态时，当前帧数，取值为1或2
-	frame_counter BYTE  0     ; 累计变量，每次加到5就更新运动帧，并把该变量清零
 player ends
 
 ; 砖块类
 brick struct
 	boundary			box		 <>	 ; 砖块的边界
-	brick_type          DWORD    0   ; 砖块类型 0,1,2,3 普通 4,5光滑 6,7锋利 8,9易碎 10向左传送 11向右传送
+	brick_type          DWORD    0   ; 砖块类型
 brick ends
 
 ; 碰撞类
@@ -91,10 +87,8 @@ collision ends
 
 ; 游戏中常量
 .const
-	my_window_width  EQU   490       ; 窗体水平宽度
+	my_window_width  EQU   480       ; 窗体水平宽度
 	my_window_height EQU   675       ; 窗体竖直高度
-	; 原始背景图片尺寸 480*640
-
 	brick_width		 EQU   120       ; 砖块水平宽度
 	brick_height	 EQU   24        ; 砖块竖直高度
 	brick_x_gap		 EQU   60
@@ -105,21 +99,10 @@ collision ends
 	dir_down         EQU   4
 	dir_left         EQU   2
 	dir_right        EQU   1
-
-	player_speed     EQU   4          ; 人的每个方向的初始速度
-
-
-	wall_top_y       EQU   160         ; 四面边界的位置，和我们正常见到的上下左右一致
-	wall_down_y      EQU   775
-	wall_left_x      EQU   120
-	wall_right_x     EQU   1080
-
-	door_top_y       EQU   358          ; 球框的上下边界的y值
-	door_down_y      EQU   582
-	door_left_x      EQU   180        ; 左边球框入口x
-	door_right_x     EQU   1010		  ; 右边球框入口x
-
-
+	
+	player_height    EQU   32
+	player_x_speed   EQU   6          ;玩家x方向的速度
+	prick_lose_hp	 EQU   10          ;尖刺导致玩家失血
 
 	; initialized data allocation
 .data
@@ -129,14 +112,9 @@ collision ends
 	h_endpage        DWORD    0          ; 结束界面
 	player_left_bitmap    DWORD    0          ; 玩家向左的位图
 	player_right_bitmap   DWORD    0          ; 玩家向右的位图
-	brick_normal_bitmap     DWORD    0          ; 普通砖块的位图
-	brick_icy_bitmap     DWORD    0          ; 光滑砖块的位图
-	brick_sharp_bitmap     DWORD    0          ; 锋利砖块的位图
-	brick_fragile_bitmap     DWORD    0          ; 易碎砖块的位图
-	brick_conveyor_bitmap     DWORD    0          ; 传送砖块的位图
-	brick_ceiling_bitmap     DWORD    0          ; 天花板砖块的位图
+	brick_bitmap     DWORD    0          ; 砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
-	player1          player	  <<0, 10>, <32,32>,<0,0>,<0,32,0,32>,1,1,0,0,1,1,0>         ; 玩家1
+	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0>         ; 玩家1 初始生命值设为100
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 0>)   ; 图内最多有11行砖块
 	cur_collision	 collision	<0, 0, 0, 0, 0, 0>				; 碰撞信息
 	game_over		 DWORD    0
@@ -151,7 +129,7 @@ collision ends
 
 	
 	
-	player2          player <<760, 420>, <42, 77>,<0,0>,<0,32,0,32>,0,2,0,1,1,0>                     ; 玩家2
+	;player2          player <<760, 420>, <42, 77>,<0,0>,<0,32,0,32>,0,2,0,1,1,0>                     ; 玩家2
 	paintstruct      PAINTSTRUCT <>   ; 绘制结构体
 
 
@@ -181,7 +159,6 @@ collision ends
         Main             PROTO
 		loadGameImages   PROTO
 		paintBackground  PROTO :DWORD,:DWORD
-		paintCeiling	 PROTO :DWORD,:DWORD
 		updateScene      PROTO
 		logicThread      PROTO :DWORD
 		paintThread      PROTO :DWORD
