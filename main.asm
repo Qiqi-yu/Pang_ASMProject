@@ -798,7 +798,7 @@ paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC
 paintBricks endp
 
 paintScore proc member_hdc:HDC
-    LOCAL rect :RECT
+    ;LOCAL rect :RECT
 	;mov rect.left, 0
 	;mov rect.right, 480
 	;mov rect.top, 0
