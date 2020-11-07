@@ -63,7 +63,7 @@ player struct
 	pos           point <>    ; 玩家的窗口坐标位置
 	psize         point <>    ; 玩家的形状，长度和宽度，方向改变时，这个变量会变
 	speed         point <>    ; 玩家的x,y速度 x速度向左为正，y速度向下为正
-	boundary      box <>	  ; 玩家的窗口边界
+	boundary      box <>	  ;玩家的窗口边界
 	dir           BYTE  1     ; 上8 下4 左2 右1
 	bmp_dir       BYTE  0     ; 位图的方向，4个bit中只能同时有1位为1，取决于运动时哪个键先被按下
 	score         DWORD 0     ; 玩家得分，起初为0，最多为3
@@ -76,29 +76,30 @@ player ends
 ; 砖块类
 brick struct
 	boundary			box		 <>	 ; 砖块的边界
-	brick_type          DWORD    0   ; 砖块类型 0普通 1光滑 2锋利 3易碎 4传送
+	brick_type          DWORD    0   ; 砖块类型
 brick ends
 
-; 碰撞类
-collision struct
-	collide_type		DWORD	0	; 1: 普通砖块和左右墙面 2: 尖刺和天花板
-	collide_index		DWORD	0	; 返回碰撞砖块index（0-11，记得取址时MUL TYPE bricks）
-	is_x_collide		BYTE	0	; x方向是否碰撞
-	x_need_move			SDWORD	0	; 如果x已经要碰上了（is_x_collide==1），应该移动多少
-	is_y_collide		BYTE	0	; y方向是否碰撞（在砖块上
-	y_need_move			SDWORD	0	; 如果y已经要碰上了（is_y_collide==1），应该移动多少
-collision ends
+; 足球类
+ball struct
+	pos           point    <>  ; 实时位置
+	bsize         point    <>  ; 球的形状，长宽相同
+	speed         SDWORD   0   ; 标量速度
+	bcoef         coef     <>  ; <cos, sin>，速度的分解
+	delta         point    <>  ; 每次计算得到的增量
+	counter       BYTE     0   ; 计数控制足球速度的衰减
+	is_static     BYTE     1   ; 1停止在地面上，0在空中飞行
+	cur_frame     BYTE     1   ; 球的当前帧数，取值0~4
+	frame_counter BYTE     0   ; 球的帧数累加变量，每次加到7就换一帧
+ball ends
 
 ; 游戏中常量
 .const
-	my_window_width  EQU   490       ; 窗体水平宽度
-	my_window_height EQU   675       ; 窗体竖直高度
-	; 原始背景图片尺寸 480*640
-
+	my_window_width  EQU   480       ; 窗体水平宽度
+	my_window_height EQU   640       ; 窗体竖直高度
 	brick_width		 EQU   120       ; 砖块水平宽度
 	brick_height	 EQU   24        ; 砖块竖直高度
 	brick_x_gap		 EQU   60
-	brick_y_gap		 EQU   64		 ; 屏幕竖直分隔高度
+	brick_y_gap		 EQU   64
 	brick_y_gap_in	 EQU   40
 
 	dir_top          EQU   8          ; 我们正常见到的上下左右
@@ -106,8 +107,10 @@ collision ends
 	dir_left         EQU   2
 	dir_right        EQU   1
 
+	ball_speed       EQU   25         ; 踢球后的初始速度
 	player_speed     EQU   4          ; 人的每个方向的初始速度
 
+	ball_speed_coef  EQU   6
 
 	wall_top_y       EQU   160         ; 四面边界的位置，和我们正常见到的上下左右一致
 	wall_down_y      EQU   775
@@ -129,15 +132,10 @@ collision ends
 	h_endpage        DWORD    0          ; 结束界面
 	player_left_bitmap    DWORD    0          ; 玩家向左的位图
 	player_right_bitmap   DWORD    0          ; 玩家向右的位图
-	brick_normal_bitmap     DWORD    0          ; 普通砖块的位图
-	brick_icy_bitmap     DWORD    0          ; 光滑砖块的位图
-	brick_sharp_bitmap     DWORD    0          ; 锋利砖块的位图
-	brick_fragile_bitmap     DWORD    0          ; 易碎砖块的位图
-	brick_conveyor_bitmap     DWORD    0          ; 传送砖块的位图
+	brick_bitmap     DWORD    0          ; 砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零player1          player <<0, 10>, <40, 40>,<0,0>,0,1,0,1,1,1,0>                     ; 玩家1
 	player1          player	  <<0, 10>, <32,32>,<0,0>,<0,32,0,32>,1,1,0,0,1,1,0>         ; 玩家1
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 0>)   ; 图内最多有11行砖块
-	cur_collision	 collision	<0, 0, 0, 0, 0, 0>				; 碰撞信息
 	game_over		 DWORD    0
 
 
@@ -145,12 +143,14 @@ collision ends
 	h_winpage2       DWORD    0          ; 玩家2胜利界面
 	h_guidepage      DWORD    0          ; 指南页面
 	player2_bitmap   DWORD    0          ; 玩家2的精灵图
+	ball_bitmap      DWORD    0          ; 球的位图
 	score_bitmap     DWORD    0          ; 分数位图
 	;gravity		     REAL4   0.03
 
 	
 	
 	player2          player <<760, 420>, <42, 77>,<0,0>,<0,32,0,32>,0,2,0,1,1,0>                     ; 玩家2
+	soccer           ball   <<575, 440>, <50, 50>,25,<0.0,0.0>,<0,0>,0,1,1,0>            ; 球
 	paintstruct      PAINTSTRUCT <>   ; 绘制结构体
 
 
@@ -187,18 +187,23 @@ collision ends
 		paintBricks		 PROTO :DWORD,:DWORD
 		initialBricks	 PROTO 
 		changeBricks 	 PROTO
-		colliDetect		 PROTO
 		;time             PROTO C
 		clock			 PROTO C
 
 		isColliding      PROTO :DWORD
+		paintBall        PROTO :DWORD,:DWORD
 		paintScore       PROTO :DWORD,:DWORD
 		movePlayer       PROTO :DWORD
+		moveBall		 PROTO
+		changePlayerPos  PROTO :DWORD,:DWORD
+		returnPlayerPos  PROTO :DWORD
 		getScore         PROTO
 		gameOver         PROTO 
 		resetGame        PROTO
 		processKeyUp     PROTO :DWORD
 		processKeyDown   PROTO :DWORD
 		processCollide   PROTO
+		calDirection     PROTO :DWORD
+
 
 
