@@ -348,11 +348,27 @@ L1:
 		mov		edx, 0
 		mov		ecx, 12
 		div		ecx
-		mov		[esi].brick_type, edx
+		mov		[esi].brick_kind, edx
+
+		.IF [esi].brick_kind >= 0 && [esi].brick_kind <= 3
+			mov [esi].brick_type, 1
+		.ELSEIF [esi].brick_kind == 4 || [esi].brick_kind == 5
+			mov [esi].brick_type, 3
+		.ELSEIF [esi].brick_kind == 6 || [esi].brick_kind == 7
+			mov [esi].brick_type, 2
+		.ELSEIF [esi].brick_kind == 8 || [esi].brick_kind == 9
+			mov [esi].brick_type, 6
+		.ELSEIF [esi].brick_kind == 10
+			mov [esi].brick_type, 4
+		.ELSEIF [esi].brick_kind == 11
+			mov [esi].brick_type, 5
+		.ENDIF
 
 		add		esi, TYPE bricks
 		pop		ecx
-		loop	L1
+		dec     ecx
+		cmp		ecx, 0
+		jne 	L1
 	ret
 initialBricks endp
 
@@ -399,8 +415,20 @@ changeBricks proc uses ecx esi edi ebx edx
 		mov		edx, 0
 		mov		ecx, 12
 		div		ecx
-		mov		[edi].brick_type, edx
-
+		mov		[edi].brick_kind, edx
+		.IF [edi].brick_kind >= 0 && [edi].brick_kind <= 3
+			mov [edi].brick_type, 1
+		.ELSEIF [edi].brick_kind == 4 || [edi].brick_kind == 5
+			mov [edi].brick_type, 3
+		.ELSEIF [edi].brick_kind == 6 || [edi].brick_kind == 7
+			mov [edi].brick_type, 2
+		.ELSEIF [edi].brick_kind == 8 || [edi].brick_kind == 9
+			mov [edi].brick_type, 6
+		.ELSEIF [edi].brick_kind == 10
+			mov [edi].brick_type, 4
+		.ELSEIF [edi].brick_kind == 11
+			mov [edi].brick_type, 5
+		.ENDIF
 	.ENDIF
 
 	mov	   ecx, lengthof bricks
@@ -675,6 +703,7 @@ updateScene proc uses eax
 	invoke paintPlayers, member_hdc, member_hdc2
 
     ;绘制分数
+	invoke paintScore, member_hdc
 
 	; BitBlt（hDestDC, x, y, nWidth, nheight, hSrcDC, xSrc, ySrc, dwRop）
 	; 将源矩形区域直接拷贝到目标区域：SRCCOPY
@@ -745,15 +774,15 @@ paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC
 		L2:
 			push	ecx
 			push	edi
-			.IF [edi].brick_type >= 0 && [edi].brick_type <= 3
+			.IF [edi].brick_type == 1
 				invoke	SelectObject, member_hdc2, brick_normal_bitmap
-			.ELSEIF [edi].brick_type == 4 || [edi].brick_type == 5
+			.ELSEIF [edi].brick_type == 3
 				invoke	SelectObject, member_hdc2, brick_icy_bitmap
-			.ELSEIF [edi].brick_type == 6 || [edi].brick_type == 7
+			.ELSEIF [edi].brick_type == 2
 				invoke	SelectObject, member_hdc2, brick_sharp_bitmap
-			.ELSEIF [edi].brick_type == 8 || [edi].brick_type == 9
+			.ELSEIF [edi].brick_type == 6
 				invoke	SelectObject, member_hdc2, brick_fragile_bitmap
-			.ELSEIF [edi].brick_type == 10 || [edi].brick_type == 11
+			.ELSEIF [edi].brick_type == 4 || [edi].brick_type == 5
 				invoke	SelectObject, member_hdc2, brick_conveyor_bitmap
 			.ENDIF
 			pop		edi
@@ -767,5 +796,15 @@ paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC
 	.ENDIF
 	ret
 paintBricks endp
+
+paintScore proc member_hdc:HDC
+    ;LOCAL rect :RECT
+	;mov rect.left, 0
+	;mov rect.right, 480
+	;mov rect.top, 0
+	;mov rect.bottom, 40
+	;invoke DrawText, member_hdc, ADDR OurText, -1,  ADDR rect,  DT_SINGLELINE or DT_CENTER or DT_VCENTER
+	ret
+paintScore endp
 
 end start

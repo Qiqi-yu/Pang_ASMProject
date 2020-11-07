@@ -72,7 +72,8 @@ player ends
 ; 砖块类
 brick struct
 	boundary			box		 <>	 ; 砖块的边界
-	brick_type          DWORD    0   ; 砖块类型
+	brick_type          DWORD    1   ; 砖块返回类型  1普通 2尖刺 3冰块 4向左传送带 5向右传送带 6易碎
+	brick_kind          DWORD    0   ; 砖块生成类型  0-3 普通 4-5 冰块 6-7尖刺 8-9易碎 10向左传送带 11向右传送带
 brick ends
 
 ; 碰撞类
@@ -87,7 +88,7 @@ collision ends
 
 ; 游戏中常量
 .const
-	my_window_width  EQU   480       ; 窗体水平宽度
+	my_window_width  EQU   490       ; 窗体水平宽度
 	my_window_height EQU   675       ; 窗体竖直高度
 	brick_width		 EQU   120       ; 砖块水平宽度
 	brick_height	 EQU   24        ; 砖块竖直高度
@@ -121,10 +122,10 @@ collision ends
 	brick_ceiling_bitmap   DWORD    0          ; 天花板砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零
 	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0>         ; 玩家1 初始生命值设为100
-	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 0>)   ; 图内最多有11行砖块
+	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
 	cur_collision	 collision	<0, 0, 0, 0, 0, 0>				; 碰撞信息
 	game_over		 DWORD    0
-
+	;OurText			 db    "text",0
 
 	h_winpage1       DWORD    0          ; 玩家1胜利界面
 	h_winpage2       DWORD    0          ; 玩家2胜利界面
@@ -176,9 +177,10 @@ collision ends
 		colliDetect		 PROTO
 		;time             PROTO C
 		clock			 PROTO C
+		paintScore		 PROTO :DWORD
 
 		isColliding      PROTO :DWORD
-		paintScore       PROTO :DWORD,:DWORD
+		paintScore       PROTO 
 		movePlayer       PROTO :DWORD
 		getScore         PROTO
 		gameOver         PROTO 
