@@ -144,6 +144,7 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 				mov game_status, 1
 				mov player1.dir, dir_right
 				invoke initialBricks
+				invoke initPlayer
 			.ELSEIF game_status == 2
 				mov game_status, 0
 				invoke startGame
@@ -184,6 +185,19 @@ startGame proc
 		invoke CloseHandle, eax
 		ret
 startGame endp
+
+initPlayer proc
+	mov player1.pos.x,224
+	mov player1.pos.y,200
+	mov player1.speed.x,0
+	mov player1.speed.y,0
+	mov player1.hp,100
+	mov player1.score,0
+	mov player1.on_ice,0
+	mov player1.on_conveyor,0
+
+	ret
+initPlayer endp
 
 loadGameImages proc
 	; 加载开始界面的位图
@@ -244,7 +258,7 @@ logicThread proc p:DWORD
 
 	; 游戏界面
 	.WHILE game_status == 1
-		
+
 
 		invoke Sleep, 30
 		; 重置计数器
@@ -665,6 +679,9 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	mov [eax].on_conveyor,0
 	.ENDIF
 
+	.IF [eax].hp <= 0
+	mov game_status,2
+	.ENDIF
 
 	m2m [eax].boundary.left,[eax].pos.x
 	m2m [eax].boundary.top,[eax].pos.y
@@ -859,7 +876,7 @@ paintScore proc member_hdc:HDC
 	mov    eax, offset text
 	invoke TextOutA,member_hdc,40,90,addr text,4
 	;invoke DrawText, member_hdc, addr text, -1,  addr rect,  DT_SINGLELINE or DT_CENTER or DT_VCENTER
-	
+
 	ret
 paintScore endp
 

@@ -200,4 +200,5 @@ collision ends
 		processKeyDown   PROTO :DWORD
 		processCollide   PROTO
 		startGame        PROTO
+		initPlayer       PROTO
 
