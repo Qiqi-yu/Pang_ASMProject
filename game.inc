@@ -76,7 +76,7 @@ player ends
 ; 砖块类
 brick struct
 	boundary			box		 <>	 ; 砖块的边界
-	brick_type          DWORD    0   ; 砖块类型 0普通 1光滑 2锋利 3易碎 4传送
+	brick_type          DWORD    0   ; 砖块类型 0,1,2,3 普通 4,5光滑 6,7锋利 8,9易碎 10向左传送 11向右传送
 brick ends
 
 ; 碰撞类

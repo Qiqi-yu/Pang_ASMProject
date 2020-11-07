@@ -205,19 +205,19 @@ loadGameImages proc
 	mov brick_normal_bitmap, eax
 
 	; 加载光滑砖块的位图
-	invoke LoadBitmap, hInstance, 141
+	invoke LoadBitmap, hInstance, 142
 	mov brick_icy_bitmap, eax
 
 	; 加载锋利砖块的位图
-	invoke LoadBitmap, hInstance, 141
+	invoke LoadBitmap, hInstance, 143
 	mov brick_sharp_bitmap, eax
 
 	; 加载易碎砖块的位图
-	invoke LoadBitmap, hInstance, 141
+	invoke LoadBitmap, hInstance, 144
 	mov brick_fragile_bitmap, eax
 
 	; 加载传送砖块的位图
-	invoke LoadBitmap, hInstance, 141
+	invoke LoadBitmap, hInstance, 145
 	mov brick_conveyor_bitmap, eax
 	ret
 loadGameImages endp
@@ -333,6 +333,18 @@ L1:
 		mov		[esi].boundary.top, edi
 		add		edi, brick_height
 		mov		[esi].boundary.bottom, edi
+
+		push	ecx
+		push	esi
+		invoke	Sleep, 10
+		invoke	clock
+		pop		esi
+		pop		ecx
+		mov		edx, 0
+		mov		ecx, 12
+		div		ecx
+		mov		[esi].brick_type, edx
+
 		add		esi, TYPE bricks
 		pop		ecx
 		loop	L1
@@ -373,6 +385,17 @@ changeBricks proc uses ecx esi edi ebx edx
 		mov		[edi].boundary.top, eax
 		add		eax, brick_height
 		mov		[edi].boundary.bottom, eax
+
+		push	ecx
+		push	edi
+		invoke	clock
+		pop		edi
+		pop		ecx
+		mov		edx, 0
+		mov		ecx, 12
+		div		ecx
+		mov		[edi].brick_type, edx
+
 	.ENDIF
 
 	mov	   ecx, lengthof bricks
@@ -681,25 +704,25 @@ paintBricks proc uses esi edi ebx edx eax, member_hdc1:HDC, member_hdc2:HDC
 		L2:
 			push	ecx
 			push	edi
-			;.IF [edi].brick_type == 0
+			.IF [edi].brick_type >= 0 && [edi].brick_type <= 3
 				invoke	SelectObject, member_hdc2, brick_normal_bitmap
-			;.ELSEIF [edi].brick_type == 1
-			;	invoke	SelectObject, member_hdc2, brick_icy_bitmap
-			;.ELSEIF [edi].brick_type == 2
-			;	invoke	SelectObject, member_hdc2, brick_sharp_bitmap
-			;.ELSEIF [edi].brick_type == 3
-			;	invoke	SelectObject, member_hdc2, brick_fragile_bitmap
-			;.ELSEIF [edi].brick_type == 4
-			;	invoke	SelectObject, member_hdc2, brick_conveyor_bitmap
-			;.ENDIF
+			.ELSEIF [edi].brick_type == 4 || [edi].brick_type == 5
+				invoke	SelectObject, member_hdc2, brick_icy_bitmap
+			.ELSEIF [edi].brick_type == 6 || [edi].brick_type == 7
+				invoke	SelectObject, member_hdc2, brick_sharp_bitmap
+			.ELSEIF [edi].brick_type == 8 || [edi].brick_type == 9
+				invoke	SelectObject, member_hdc2, brick_fragile_bitmap
+			.ELSEIF [edi].brick_type == 10 || [edi].brick_type == 11
+				invoke	SelectObject, member_hdc2, brick_conveyor_bitmap
+			.ENDIF
 			pop		edi
 			invoke	TransparentBlt, member_hdc1, [edi].boundary.left, [edi].boundary.top,\
 				brick_width, brick_height, member_hdc2, 0, 0, brick_width, brick_height, 16777215
 			add		edi, type bricks
 			pop		ecx
-			;cmp		ecx, 0
-			;jne L2
-			loop L2
+			dec		ecx
+			cmp		ecx, 0
+			jne L2
 	.ENDIF
 	ret
 paintBricks endp
