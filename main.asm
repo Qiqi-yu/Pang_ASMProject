@@ -999,7 +999,6 @@ paintScore proc member_hdc:HDC
 	;invoke wsprintf, addr scoreStr, addr qwq, eax
 	mov    eax, offset text
 	invoke wsprintf,offset buf,offset text,player1.hp,player1.score
-	;invoke TextOutA,member_hdc,40,90,addr buf,strlen
 	.ELSEIF game_status == 2
 	mov rect.left,130
 	mov rect.right, 400
