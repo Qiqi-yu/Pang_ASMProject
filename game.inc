@@ -122,13 +122,13 @@ collision ends
 	h_endpage        DWORD    0          ; 结束界面
 	player_left_bitmap    DWORD    0          ; 玩家向左的位图
 	player_right_bitmap   DWORD    0          ; 玩家向右的位图
-
 	brick_normal_bitmap    DWORD    0          ; 普通砖块的位图
 	brick_icy_bitmap    DWORD    0             ; 光滑砖块的位图
 	brick_sharp_bitmap    DWORD    0             ; 锋利砖块的位图
 	brick_fragile_bitmap    DWORD    0             ; 易碎砖块的位图
-	brick_conveyor_bitmap    DWORD    0             ; 传送砖块的位图
 	brick_ceiling_bitmap   DWORD    0          ; 天花板砖块的位图
+	brick_conveyor_left_bitmap    DWORD    0             ; 向左传送砖块的位图
+	brick_conveyor_right_bitmap    DWORD    0             ; 向右传送砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零
 	;last_brick_col   DWORD    0
 	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0,0>         ; 玩家1 初始生命值设为100

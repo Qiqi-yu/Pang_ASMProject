@@ -235,13 +235,17 @@ loadGameImages proc
 	invoke LoadBitmap, hInstance, 144
 	mov brick_fragile_bitmap, eax
 
-	; 加载传送砖块的位图
-	invoke LoadBitmap, hInstance, 145
-	mov brick_conveyor_bitmap, eax
-
 	; 加载天花板砖块的位图
 	invoke LoadBitmap, hInstance, 146
 	mov brick_ceiling_bitmap, eax
+
+	; 加载向左传送砖块的位图
+	invoke LoadBitmap, hInstance, 147
+	mov brick_conveyor_left_bitmap, eax
+
+	; 加载向右传送砖块的位图
+	invoke LoadBitmap, hInstance, 148
+	mov brick_conveyor_right_bitmap, eax
 
 	ret
 loadGameImages endp
@@ -705,7 +709,10 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	.ELSEIF [edi].collide_type == 3
 		.IF [edi].last_collide_type!=3
 			.IF [eax].hp < 100
-			add [eax].hp,5
+				add [eax].hp,5
+				.IF [eax].hp > 100
+					mov [eax].hp, 100
+				.ENDIF
 			.ENDIF
 		.ENDIF
 	mov [eax].on_ice,1
@@ -714,7 +721,10 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	.ELSEIF [edi].collide_type==4 
 		.IF [edi].last_collide_type!=4
 			.IF [eax].hp < 100
-			add [eax].hp,5
+				add [eax].hp,5
+				.IF [eax].hp > 100
+					mov [eax].hp, 100
+				.ENDIF
 			.ENDIF
 		.ENDIF
 	mov [eax].speed.x, conveyor_speed_left
@@ -725,7 +735,10 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	.ELSEIF [edi].collide_type==5
 		.IF [edi].last_collide_type!=5
 			.IF [eax].hp < 100
-			add [eax].hp,5
+				add [eax].hp,5
+				.IF [eax].hp > 100
+					mov [eax].hp, 100
+				.ENDIF
 			.ENDIF
 		.ENDIF
 	mov [eax].speed.x,conveyor_speed_right
@@ -743,7 +756,10 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	mov [eax].on_conveyor,0
 		.IF [edi].last_collide_type!=6
 			.IF [eax].hp < 100
-			add [eax].hp,5
+				add [eax].hp,5
+				.IF [eax].hp > 100
+					mov [eax].hp, 100
+				.ENDIF
 			.ENDIF
 		.ENDIF
 
@@ -752,17 +768,16 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	mov [eax].on_conveyor,0
 		.IF [edi].last_collide_type!=1
 			.IF [eax].hp < 100
-			add [eax].hp,5
+				add [eax].hp,5
+				.IF [eax].hp > 100
+					mov [eax].hp, 100
+				.ENDIF
 			.ENDIF
 		.ENDIF
 
 	.ELSE
 	mov [eax].on_ice,0
 	mov [eax].on_conveyor,0
-	.ENDIF
-
-	.IF [eax].hp > 100
-	mov [eax].hp,100
 	.ENDIF
 
 	.IF [eax].hp <= 0
@@ -935,8 +950,10 @@ paintBricks proc uses edi ecx, member_hdc1:HDC, member_hdc2:HDC
 				invoke	SelectObject, member_hdc2, brick_sharp_bitmap
 			.ELSEIF [edi].brick_type == 6
 				invoke	SelectObject, member_hdc2, brick_fragile_bitmap
-			.ELSEIF [edi].brick_type == 4 || [edi].brick_type == 5
-				invoke	SelectObject, member_hdc2, brick_conveyor_bitmap
+			.ELSEIF [edi].brick_type == 4
+				invoke	SelectObject, member_hdc2, brick_conveyor_left_bitmap
+			.ELSEIF [edi].brick_type == 5
+				invoke	SelectObject, member_hdc2, brick_conveyor_right_bitmap
 			.ENDIF
 			pop		edi
 			invoke	TransparentBlt, member_hdc1, [edi].boundary.left, [edi].boundary.top,\
@@ -953,10 +970,10 @@ paintBricks endp
 paintScore proc member_hdc:HDC
     LOCAL rect :RECT
 	.IF game_status == 1
-	mov rect.left, 320
+	mov rect.left, 0
 	mov rect.right, 480
-	mov rect.top, 30
-	mov rect.bottom, 45
+	mov rect.top, 0
+	mov rect.bottom, 40
 
 	;mov eax, score
 	;invoke wsprintf, addr scoreStr, addr qwq, eax
@@ -978,7 +995,7 @@ paintScore proc member_hdc:HDC
 	ret
 paintScore endp
 
-getStringLength proc uses edi ecx eax, string:PTR BYTE
+getStringLength proc string:PTR BYTE
 	assume edi: PTR BYTE
 	mov edi,string
 	mov ecx,0
