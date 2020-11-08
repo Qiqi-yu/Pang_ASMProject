@@ -259,6 +259,14 @@ loadGameImages proc
 	invoke LoadBitmap, hInstance, 148
 	mov brick_conveyor_right_bitmap, eax
 
+	; 加载玩家向左时受伤的位图
+	invoke LoadBitmap, hInstance, 154
+	mov player_losehp_left_bitmap, eax
+
+	; 加载玩家向右的位图
+	invoke LoadBitmap, hInstance, 155
+	mov player_losehp_right_bitmap, eax
+
 	ret
 loadGameImages endp
 
@@ -271,7 +279,7 @@ logicThread proc p:DWORD
 		invoke Sleep, 1000
 	.ENDW
 
-	; ��Ϸ����
+	; 游戏界面
 	.WHILE game_status == 1
 		
 		COMMENT !
@@ -840,11 +848,11 @@ processKeyDown proc wParam:WPARAM
 			mov player1.speed.x,conveyor_speed_right
 			.ENDIF
 		.ENDIF
-		;.IF player1.speed.x < 0
-		;	mov player1.dir, dir_left
-		;.ELSEIF player1.speed.x > 0
-		;	mov player1.dir, dir_right
-		;.ENDIF
+		.IF player1.speed.x < 0
+			mov player1.dir, dir_left
+		.ELSEIF player1.speed.x > 0
+			mov player1.dir, dir_right
+		.ENDIF
 	.ENDIF
 	ret
 processKeyDown endp
@@ -935,9 +943,18 @@ paintCeiling endp
 paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
 	.IF game_status == 1
 		.IF player1.dir == dir_left
-			invoke SelectObject, member_hdc2, player_left_bitmap
+			.IF player1.lose_hp == 0 
+				invoke SelectObject, member_hdc2, player_left_bitmap
+			.ELSE 
+				invoke SelectObject, member_hdc2, player_losehp_left_bitmap
+			.ENDIF
 		.ELSEIF player1.dir == dir_right
 			invoke SelectObject, member_hdc2, player_right_bitmap
+			.IF player1.lose_hp == 0 
+				invoke SelectObject, member_hdc2, player_right_bitmap
+			.ELSE 
+				invoke SelectObject, member_hdc2, player_losehp_right_bitmap
+			.ENDIF
 		.ENDIF
 		invoke TransparentBlt, member_hdc1, player1.pos.x, player1.pos.y,\
 				player1.psize.x, player1.psize.y, member_hdc2, 0, 0, player1.psize.x, player1.psize.y, 16777215
@@ -989,11 +1006,9 @@ paintScore proc member_hdc:HDC
 	mov rect.top, 30
 	mov rect.bottom, 45
 
-	;mov eax, score
-	;invoke wsprintf, addr scoreStr, addr qwq, eax
 	mov    eax, offset text
 	invoke wsprintf,offset buf,offset text,player1.hp,player1.score
-	;invoke TextOutA,member_hdc,40,90,addr buf,strlen
+
 	.ELSEIF game_status == 2
 	mov rect.left,130
 	mov rect.right, 400

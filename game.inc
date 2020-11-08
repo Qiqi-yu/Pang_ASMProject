@@ -136,6 +136,8 @@ endm
 	h_endpage        DWORD    0          ; 结束界面
 	player_left_bitmap    DWORD    0          ; 玩家向左的位图
 	player_right_bitmap   DWORD    0          ; 玩家向右的位图
+	player_losehp_left_bitmap    DWORD    0          ; 玩家向左时受伤的位图
+	player_losehp_right_bitmap   DWORD    0          ; 玩家向右时受伤的位图
 	brick_normal_bitmap    DWORD    0          ; 普通砖块的位图
 	brick_icy_bitmap    DWORD    0             ; 光滑砖块的位图
 	brick_sharp_bitmap    DWORD    0             ; 锋利砖块的位图
@@ -143,8 +145,9 @@ endm
 	brick_ceiling_bitmap   DWORD    0          ; 天花板砖块的位图
 	brick_conveyor_left_bitmap    DWORD    0             ; 向左传送砖块的位图
 	brick_conveyor_right_bitmap    DWORD    0             ; 向右传送砖块的位图
+
 	game_counter     DWORD    0								; 游戏中的计数器 计满清零
-	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0,0>         ; 玩家1 初始生命值设为100
+	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0, 0, 0, 0>         ; 玩家1 初始生命值设为100
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
 	bricks_tmp			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
 	cur_collision	 collision	<0, 0, 0, 0, 0, 0, 0, 0>				; 碰撞信息
