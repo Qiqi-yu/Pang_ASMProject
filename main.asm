@@ -144,6 +144,8 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 				mov player1.dir, dir_right
 				invoke initialBricks
 				invoke initPlayer
+				mov prick_lose_hp,2
+				mov ceiling_lose_hp,10
 				mov game_status, 1
 			.ELSEIF game_status == 2
 				mov game_status, 0
@@ -261,6 +263,19 @@ logicThread proc p:DWORD
 
 	; 游戏界面
 	.WHILE game_status == 1
+		
+		COMMENT !
+		;根据分数修改砖块上升速度，碰撞检测等相关变量需修改
+		.IF player1.score < 5
+		mov brick_up_speed,1
+		.ELSEIF player1.score < 20
+		mov brick_up_speed,2
+		.ELSEIF player1.score < 100
+		mov brick_up_speed,4
+		.ELSE 
+		mov brick_up_speed,8
+		.ENDIF
+		!
 
 		invoke Sleep, 30
 		; 重置计数器
@@ -638,7 +653,7 @@ collide_x:
 	;.IF cur_top <= brick_height
 	.IF cur_top <= brick_height
 		mov [edi].is_y_collide, 0
-		mov [edi].collide_type, 2		; 2表示碰到尖刺
+		mov [edi].collide_type, 8		; 2表示碰到尖刺
 	.ENDIF
 
 ; 检测是否掉出画面(next_top > my_window_height)
@@ -683,18 +698,11 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	mov edi,offset cur_collision
 
 	.IF [edi].is_y_collide == 0
-	add [eax].speed.y,1
-	;fld [eax].speed.y
-	;fadd gravity
-	;fstp [eax].speed.y
-	;fadd [eax].speed.y,0.03
+	add [eax].speed.y,1 
 	mov ebx,[eax].speed.y
 	add [eax].pos.y,ebx
 
-	.ELSE
-	;fldz
-	;fstp [eax].speed.y
-    ;mov [eax].speed.y,0.0
+	.ELSE 
 	mov [eax].speed.y,0
 	push ebx
 	mov ebx,[edi].y_need_move
@@ -713,18 +721,16 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	.ENDIF
 
 
-	.IF [edi].collide_type == 2 ;&& [edi].last_collide_type != 2
-	sub [eax].hp,prick_lose_hp
+	.IF [edi].collide_type == 2  
+	mov ebx,prick_lose_hp
+	sub [eax].hp,ebx
 	mov [eax].on_ice,0
 	mov [eax].on_conveyor,0
 
 	.ELSEIF [edi].collide_type == 3
 		.IF [edi].last_collide_type!=3
 			.IF [eax].hp < 100
-				add [eax].hp,5
-				.IF [eax].hp > 100
-					mov [eax].hp, 100
-				.ENDIF
+			add [eax].hp,5
 			.ENDIF
 		.ENDIF
 	mov [eax].on_ice,1
@@ -733,24 +739,17 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	.ELSEIF [edi].collide_type==4 
 		.IF [edi].last_collide_type!=4
 			.IF [eax].hp < 100
-				add [eax].hp,5
-				.IF [eax].hp > 100
-					mov [eax].hp, 100
-				.ENDIF
+			add [eax].hp,5
 			.ENDIF
 		.ENDIF
 	mov [eax].speed.x, conveyor_speed_left
-	;add [eax].speed.x,conveyor_speed_left
 	mov [eax].on_conveyor,1
 	mov [eax].on_ice,0
 
 	.ELSEIF [edi].collide_type==5
 		.IF [edi].last_collide_type!=5
 			.IF [eax].hp < 100
-				add [eax].hp,5
-				.IF [eax].hp > 100
-					mov [eax].hp, 100
-				.ENDIF
+			add [eax].hp,5
 			.ENDIF
 		.ENDIF
 	mov [eax].speed.x,conveyor_speed_right
@@ -768,10 +767,7 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	mov [eax].on_conveyor,0
 		.IF [edi].last_collide_type!=6
 			.IF [eax].hp < 100
-				add [eax].hp,5
-				.IF [eax].hp > 100
-					mov [eax].hp, 100
-				.ENDIF
+			add [eax].hp,5
 			.ENDIF
 		.ENDIF
 
@@ -780,19 +776,29 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	mov [eax].on_conveyor,0
 		.IF [edi].last_collide_type!=1
 			.IF [eax].hp < 100
-				add [eax].hp,5
-				.IF [eax].hp > 100
-					mov [eax].hp, 100
-				.ENDIF
+			add [eax].hp,5
 			.ENDIF
 		.ENDIF
+
+	.ELSEIF [edi].collide_type == 8
+	mov ebx,ceiling_lose_hp
+	sub [eax].hp,ebx
+	mov [eax].on_ice,0
+	mov [eax].on_conveyor,0
 
 	.ELSE
 	mov [eax].on_ice,0
 	mov [eax].on_conveyor,0
 	.ENDIF
 
+	.IF [eax].hp > 100
+	mov [eax].hp,100
+	.ENDIF
+
 	.IF [eax].hp <= 0
+	pushad
+	invoke PlaySound, addr end_music, hInstance, SND_FILENAME or SND_ASYNC
+	popad
 	mov game_status,2
 	.ENDIF
 
@@ -981,11 +987,13 @@ paintBricks endp
 
 paintScore proc member_hdc:HDC
     LOCAL rect :RECT
+	LOCAL hfont:HFONT
+
 	.IF game_status == 1
-	mov rect.left, 0
+	mov rect.left, 320
 	mov rect.right, 480
-	mov rect.top, 0
-	mov rect.bottom, 40
+	mov rect.top, 30
+	mov rect.bottom, 45
 
 	;mov eax, score
 	;invoke wsprintf, addr scoreStr, addr qwq, eax
@@ -993,22 +1001,22 @@ paintScore proc member_hdc:HDC
 	invoke wsprintf,offset buf,offset text,player1.hp,player1.score
 	;invoke TextOutA,member_hdc,40,90,addr buf,strlen
 	.ELSEIF game_status == 2
-	mov rect.left, 0
-	mov rect.right, 480
-	mov rect.top, 200
-	mov rect.bottom, 300
-	;invoke CreateFont,24,16,0,0,400,0,0,0,OEM_CHARSET,\
-                                       ;OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,\
-                                       ;DEFAULT_QUALITY,DEFAULT_PITCH or FF_SCRIPT,\
-                                       ;ADDR FontName
-    ;invoke SelectObject, hdc, eax
-    ;mov    hfont,eax
+	mov rect.left,130
+	mov rect.right, 400
+	mov rect.top,270
+	mov rect.bottom, 320
+	invoke CreateFont,70,0,0,0,FW_HEAVY,0,0,0,ANSI_CHARSET,\
+                                       OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,\
+                                       DEFAULT_QUALITY,DEFAULT_PITCH or FF_SCRIPT or FF_SWISS,\
+                                       ADDR FontName
+    invoke SelectObject, member_hdc, eax
+    mov    hfont,eax
 	; 设置文字颜色
-    ;RGB    200,200,50
-    ;invoke SetTextColor,member_hdc,eax
-	; 设置背景颜色
-    ;RGB    0,0,255
-    ;invoke SetBkColor,member_hdc,eax
+    RGB    192,168,255
+    invoke SetTextColor,member_hdc,eax
+	 ;设置背景颜色
+    RGB    0,0,24
+    invoke SetBkColor,member_hdc,eax
 	mov    eax, offset text
 	invoke wsprintf,offset buf,offset text1,player1.score
 	.ENDIF
@@ -1019,7 +1027,7 @@ paintScore proc member_hdc:HDC
 	ret
 paintScore endp
 
-getStringLength proc string:PTR BYTE
+getStringLength proc uses edi ecx eax, string:PTR BYTE
 	assume edi: PTR BYTE
 	mov edi,string
 	mov ecx,0

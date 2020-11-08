@@ -13,7 +13,7 @@
       include msvcrt.inc
 	  include msimg32.inc
       include C:\masm32\macros\macros.asm
-	  include winmm.inc
+      include winmm.inc
 
 ;     libraries
 ;     ~~~~~~~~~
@@ -28,11 +28,12 @@
       includelib msvcrt.lib
 	  includelib msimg32.lib
 	  includelib Winmm.lib
-	  
+
 
       ; -----------------
       ; Local prototypes
       ; -----------------
+
 
 
 ; 可以表示坐标、速度、形状，未来兼容速度，可以取负值
@@ -52,6 +53,16 @@ box struct
 	left	SDWORD 0
 	right	SDWORD 0
 box ends
+
+COMMENT!
+RGB macro red，green，blue
+xor eax，eax
+mov ah，blue
+shl eax，8
+mov ah，green
+mov al，red
+endm
+!
 
 ; 玩家结构体
 player struct
@@ -75,7 +86,7 @@ brick ends
 
 ; 碰撞类
 collision struct
-	collide_type		DWORD	0	; 1: 普通砖块和左右墙面 2: 尖刺和天花板
+	collide_type		DWORD	0	; 1: 普通砖块和左右墙面 2: 尖刺 8 天花板
 	last_collide_type	DWORD	0	; 上次碰撞类型
 	collide_index		DWORD	0	; 返回碰撞砖块index（0-11，记得取址时MUL TYPE bricks）
 	is_x_collide		BYTE	0	; x方向是否碰撞
@@ -84,6 +95,15 @@ collision struct
 	y_need_move			SDWORD	0	; 如果y已经要碰上了（is_y_collide==1），应该移动多少
 	last_is_y_collide	BYTE	0	; y上次碰撞
 collision ends
+
+
+RGB macro red,green,blue
+	xor eax,eax
+	mov ah,blue
+	shl eax,8
+	mov ah,green
+	mov al,red
+endm
 
 ; 游戏中常量
 .const
@@ -105,7 +125,7 @@ collision ends
 	
 	player_height    EQU   32
 	player_x_speed   EQU   6          ;玩家x方向的速度
-	prick_lose_hp	 EQU   1        ;尖刺导致玩家失血
+	
 
 
 	; initialized data allocation
@@ -128,6 +148,8 @@ collision ends
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
 	bricks_tmp			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
 	cur_collision	 collision	<0, 0, 0, 0, 0, 0, 0, 0>				; 碰撞信息
+	prick_lose_hp	 DWORD   0        ;尖刺导致玩家失血
+	ceiling_lose_hp  DWORD   0        ;天花板导致玩家失血
 
 	game_over		 DWORD    0
 	score            DWORD    0
@@ -135,9 +157,10 @@ collision ends
 	text             BYTE    "hp:%d,score:%d", 0
 	text1            BYTE    "%d",0
 	strlen           DWORD    0
+	FontName         db "sans-serif",0
 
-	end_music	     BYTE    "..\\Music\\music_end.wav",0
-	collide_music	 BYTE    "..\\Music\\music_collide.wav",0
+	end_music	     BYTE    "Music\\music_end.wav",0
+	collide_music	 BYTE    "Music\\music_collide.wav",0
 	;gravity		     REAL4   0.03
 
 	paintstruct      PAINTSTRUCT <>   ; 绘制结构体
