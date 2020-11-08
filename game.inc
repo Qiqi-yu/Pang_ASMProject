@@ -13,6 +13,7 @@
       include msvcrt.inc
 	  include msimg32.inc
       include C:\masm32\macros\macros.asm
+	  include winmm.inc
 
 ;     libraries
 ;     ~~~~~~~~~
@@ -26,6 +27,7 @@
       includelib oleaut32.lib
       includelib msvcrt.lib
 	  includelib msimg32.lib
+	  includelib Winmm.lib
 	  
 
       ; -----------------
@@ -50,13 +52,6 @@ box struct
 	left	SDWORD 0
 	right	SDWORD 0
 box ends
-
-COMMENT !
-playerSpeed struct
-	x SDWORD 0
-	y real4 0.0
-playerSpeed ends
-!
 
 ; 玩家结构体
 player struct
@@ -87,6 +82,7 @@ collision struct
 	x_need_move			SDWORD	0	; 如果x已经要碰上了（is_x_collide==1），应该移动多少
 	is_y_collide		BYTE	0	; y方向是否碰撞（在砖块上
 	y_need_move			SDWORD	0	; 如果y已经要碰上了（is_y_collide==1），应该移动多少
+	last_is_y_collide	BYTE	0	; y上次碰撞
 collision ends
 
 ; 游戏中常量
@@ -101,8 +97,6 @@ collision ends
 	brick_y_gap_in	 EQU   40
 	conveyor_speed_left	 EQU   -4
 	conveyor_speed_right EQU  4
-
-	
 
 	dir_top          EQU   8          ; 我们正常见到的上下左右
 	dir_down         EQU   4
@@ -130,32 +124,22 @@ collision ends
 	brick_conveyor_left_bitmap    DWORD    0             ; 向左传送砖块的位图
 	brick_conveyor_right_bitmap    DWORD    0             ; 向右传送砖块的位图
 	game_counter     DWORD    0          ; 游戏中的计数器 每计满80清零
-	;last_brick_col   DWORD    0
 	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0,0>         ; 玩家1 初始生命值设为100
 	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
 	bricks_tmp			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; 图内最多有11行砖块
-	cur_collision	 collision	<0, 0, 0, 0, 0, 0, 0>				; 碰撞信息
+	cur_collision	 collision	<0, 0, 0, 0, 0, 0, 0, 0>				; 碰撞信息
 
 	game_over		 DWORD    0
-	;scoreStr		 DWORD     100 DUP(?)
 	score            DWORD    0
 	buf              BYTE     20 DUP(0)
 	text             BYTE    "hp:%d,score:%d", 0
 	text1            BYTE    "%d",0
 	strlen           DWORD    0
-	;qwq              DWORD     "%d", 0
-	
-	h_winpage1       DWORD    0          ; 玩家1胜利界面
-	h_winpage2       DWORD    0          ; 玩家2胜利界面
-	h_guidepage      DWORD    0          ; 指南页面
-	player2_bitmap   DWORD    0          ; 玩家2的精灵图
-	score_bitmap     DWORD    0          ; 分数位图
 
+	end_music	     BYTE    "..\\Music\\music_end.wav",0
+	collide_music	 BYTE    "..\\Music\\music_collide.wav",0
 	;gravity		     REAL4   0.03
 
-	
-	
-	;player2          player <<760, 420>, <42, 77>,<0,0>,<0,32,0,32>,0,2,0,1,1,0>                     ; 玩家2
 	paintstruct      PAINTSTRUCT <>   ; 绘制结构体
 
 
@@ -194,23 +178,14 @@ collision ends
 		initialBricks	 PROTO 
 		changeBricks 	 PROTO
 		colliDetect		 PROTO
-		;time             PROTO C
 		clock			 PROTO C
 		paintScore		 PROTO :DWORD
 		removeFragileBrick PROTO
 		rand			 PROTO C
 		srand			 PROTO C: DWORD
-		;sprintf          PROTO C :ptr sbyte, :ptr sbyte, :VARARG
-
-		isColliding      PROTO :DWORD
-		paintScore       PROTO
 		movePlayer       PROTO :DWORD
-		getScore         PROTO
-		gameOver         PROTO 
-		resetGame        PROTO
 		processKeyUp     PROTO :DWORD
 		processKeyDown   PROTO :DWORD
-		processCollide   PROTO
 		startGame        PROTO
 		initPlayer       PROTO
 		getStringLength  PROTO :PTR BYTE

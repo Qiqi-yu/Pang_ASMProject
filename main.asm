@@ -510,6 +510,8 @@ colliDetect proc uses eax ebx ecx esi edi edx
 
 	mov eax, [edi].collide_type
 	mov [edi].last_collide_type, eax
+	mov al, [edi].is_y_collide
+	mov [edi].last_is_y_collide, al
 	mov [edi].collide_type,0
 
 	; 计算当前左、右、下
@@ -587,7 +589,7 @@ collide_y:
 		mov [edi].is_y_collide, 1
 		sub ecx, cur_bottom
 		sub ecx, brick_up_speed
-		;dec ecx							; 移动距离为 brick.boundary.top - cur_bottom - 1
+		; dec ecx							; 移动距离为 brick.boundary.top - cur_bottom - 1
 		mov [edi].y_need_move, ecx
 		mov ecx, [edx].brick_type
 		mov [edi].collide_type, ecx		; 记录碰撞砖块类型
@@ -644,6 +646,16 @@ endgame_detect:
 	.IF next_top > my_window_height
 		mov [edi].is_y_collide, 1
 		mov [edi].collide_type, 7			; 7表掉出画面
+	.ENDIF
+
+	.IF [edi].is_y_collide == 1 && [edi].last_is_y_collide == 0 && [edi].collide_type != 7
+		pushad
+		invoke PlaySound, addr collide_music, hInstance, SND_FILENAME or SND_ASYNC
+		popad
+	.ELSEIF [edi].collide_type == 7
+		pushad
+		invoke PlaySound, addr end_music, hInstance, SND_FILENAME or SND_ASYNC
+		popad
 	.ENDIF
 	ret
 colliDetect endp
@@ -985,6 +997,18 @@ paintScore proc member_hdc:HDC
 	mov rect.right, 480
 	mov rect.top, 200
 	mov rect.bottom, 300
+	;invoke CreateFont,24,16,0,0,400,0,0,0,OEM_CHARSET,\
+                                       ;OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,\
+                                       ;DEFAULT_QUALITY,DEFAULT_PITCH or FF_SCRIPT,\
+                                       ;ADDR FontName
+    ;invoke SelectObject, hdc, eax
+    ;mov    hfont,eax
+	; 设置文字颜色
+    ;RGB    200,200,50
+    ;invoke SetTextColor,member_hdc,eax
+	; 设置背景颜色
+    ;RGB    0,0,255
+    ;invoke SetBkColor,member_hdc,eax
 	mov    eax, offset text
 	invoke wsprintf,offset buf,offset text1,player1.score
 	.ENDIF
