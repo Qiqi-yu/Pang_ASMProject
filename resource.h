@@ -9,10 +9,10 @@
 #define IDB_BITMAP_BRICK_CEILING        146
 #define IDB_BITMAP_BRICK_CONVEYOR_LEFT  147
 #define IDB_BITMAP_BRICK_CONVEYOR_RIGHT 148
-#define IDR_WAVE1                       149
 #define IDR_WAVE_END                    150
-#define IDR_WAVE2                       151
 #define IDR_WAVE_COLLIDE                151
+#define IDR_WAVE_START                  152
+#define IDR_WAVE_ENTER                  153
 #define IDB_BITMAP_STARTBG              500
 #define IDB_BITMAP_GAMEBG               501
 #define IDB_BITMAP_ENDBG                502
@@ -33,7 +33,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        152
+#define _APS_NEXT_RESOURCE_VALUE        154
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101

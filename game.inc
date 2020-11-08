@@ -36,7 +36,7 @@
 
 
 
-; ¿ÉÒÔ±íÊ¾×ø±ê¡¢ËÙ¶È¡¢ĞÎ×´£¬Î´À´¼æÈİËÙ¶È£¬¿ÉÒÔÈ¡¸ºÖµ
+; å¯ä»¥è¡¨ç¤ºåæ ‡ã€é€Ÿåº¦ã€å½¢çŠ¶ï¼Œæœªæ¥å…¼å®¹é€Ÿåº¦ï¼Œå¯ä»¥å–è´Ÿå€¼
 point struct
 	x SDWORD 0
 	y SDWORD 0
@@ -55,45 +55,46 @@ box struct
 box ends
 
 COMMENT!
-RGB macro red£¬green£¬blue
-xor eax£¬eax
-mov ah£¬blue
-shl eax£¬8
-mov ah£¬green
-mov al£¬red
+RGB macro redï¼Œgreenï¼Œblue
+xor eaxï¼Œeax
+mov ahï¼Œblue
+shl eaxï¼Œ8
+mov ahï¼Œgreen
+mov alï¼Œred
 endm
 !
 
-; Íæ¼Ò½á¹¹Ìå
+; ç©å®¶ç»“æ„ä½“
 player struct
-	pos           point <>    ; Íæ¼ÒµÄ´°¿Ú×ø±êÎ»ÖÃ
-	psize         point <>    ; Íæ¼ÒµÄĞÎ×´£¬³¤¶ÈºÍ¿í¶È£¬·½Ïò¸Ä±äÊ±£¬Õâ¸ö±äÁ¿»á±ä
-	speed         point <>    ; Íæ¼ÒµÄx,yËÙ¶È xËÙ¶ÈÏò×óÎªÕı£¬yËÙ¶ÈÏòÏÂÎªÕı
-	boundary      box <>	  ;Íæ¼ÒµÄ´°¿Ú±ß½ç
-	hp            DWORD 0     ;Íæ¼ÒµÄÉúÃüÖµ  
-	dir           BYTE  1     ; ÉÏ8 ÏÂ4 ×ó2 ÓÒ1
-	score         DWORD 0     ; Íæ¼ÒµÃ·Ö£¬Æğ³õÎª0£¬×î¶àÎª3
-	on_ice        BYTE 0	  ;0´ú±í²»ÔÚ±ù¿éÉÏ£¬1´ú±íÔÚ±ù¿éÉÏ
-	on_conveyor   BYTE 0	  ;0´ú±í²»ÔÚ´«ËÍ´øÉÏ£¬1´ú±íÔÚÏò×óµÄ´«¶¯´øÉÏ£¬2´ú±íÔÚÏòÓÒµÄ´«ËÍ´øÉÏ
+	pos           point <>    ; ç©å®¶çš„çª—å£åæ ‡ä½ç½®
+	psize         point <>    ; ç©å®¶çš„å½¢çŠ¶ï¼Œé•¿åº¦å’Œå®½åº¦ï¼Œæ–¹å‘æ”¹å˜æ—¶ï¼Œè¿™ä¸ªå˜é‡ä¼šå˜
+	speed         point <>    ; ç©å®¶çš„x,yé€Ÿåº¦ xé€Ÿåº¦å‘å·¦ä¸ºæ­£ï¼Œyé€Ÿåº¦å‘ä¸‹ä¸ºæ­£
+	boundary      box <>	  ;ç©å®¶çš„çª—å£è¾¹ç•Œ
+	hp            SDWORD 0     ;ç©å®¶çš„ç”Ÿå‘½å€¼  
+	dir           BYTE  1     ; ä¸Š8 ä¸‹4 å·¦2 å³1
+	score         DWORD 0     ; ç©å®¶å¾—åˆ†ï¼Œèµ·åˆä¸º0ï¼Œæœ€å¤šä¸º3
+	on_ice        BYTE 0	  ;0ä»£è¡¨ä¸åœ¨å†°å—ä¸Šï¼Œ1ä»£è¡¨åœ¨å†°å—ä¸Š
+	on_conveyor   BYTE 0	  ;0ä»£è¡¨ä¸åœ¨ä¼ é€å¸¦ä¸Šï¼Œ1ä»£è¡¨åœ¨å‘å·¦çš„ä¼ åŠ¨å¸¦ä¸Šï¼Œ2ä»£è¡¨åœ¨å‘å³çš„ä¼ é€å¸¦ä¸Š
+	lose_hp       BYTE 0      ;0ä»£è¡¨æœªå¤±è¡€ï¼Œ1ä»£è¡¨å¤±è¡€
 player ends
 
-; ×©¿éÀà
+; ç –å—ç±»
 brick struct
-	boundary			box		 <>	 ; ×©¿éµÄ±ß½ç
-	brick_type          DWORD    1   ; ×©¿é·µ»ØÀàĞÍ  1ÆÕÍ¨ 2¼â´Ì 3±ù¿é 4Ïò×ó´«ËÍ´ø 5ÏòÓÒ´«ËÍ´ø 6Ò×Ëé
-	brick_kind          DWORD    0   ; ×©¿éÉú³ÉÀàĞÍ  0-3 ÆÕÍ¨ 4-5 ±ù¿é 6-7¼â´Ì 8-9Ò×Ëé 10Ïò×ó´«ËÍ´ø 11ÏòÓÒ´«ËÍ´ø
+	boundary			box		 <>	 ; ç –å—çš„è¾¹ç•Œ
+	brick_type          DWORD    1   ; ç –å—è¿”å›ç±»å‹  1æ™®é€š 2å°–åˆº 3å†°å— 4å‘å·¦ä¼ é€å¸¦ 5å‘å³ä¼ é€å¸¦ 6æ˜“ç¢
+	brick_kind          DWORD    0   ; ç –å—ç”Ÿæˆç±»å‹  0-3 æ™®é€š 4-5 å†°å— 6-7å°–åˆº 8-9æ˜“ç¢ 10å‘å·¦ä¼ é€å¸¦ 11å‘å³ä¼ é€å¸¦
 brick ends
 
-; Åö×²Àà
+; ç¢°æ’ç±»
 collision struct
-	collide_type		DWORD	0	; 1: ÆÕÍ¨×©¿éºÍ×óÓÒÇ½Ãæ 2: ¼â´Ì 8 Ìì»¨°å
-	last_collide_type	DWORD	0	; ÉÏ´ÎÅö×²ÀàĞÍ
-	collide_index		DWORD	0	; ·µ»ØÅö×²×©¿éindex£¨0-11£¬¼ÇµÃÈ¡Ö·Ê±MUL TYPE bricks£©
-	is_x_collide		BYTE	0	; x·½ÏòÊÇ·ñÅö×²
-	x_need_move			SDWORD	0	; Èç¹ûxÒÑ¾­ÒªÅöÉÏÁË£¨is_x_collide==1£©£¬Ó¦¸ÃÒÆ¶¯¶àÉÙ
-	is_y_collide		BYTE	0	; y·½ÏòÊÇ·ñÅö×²£¨ÔÚ×©¿éÉÏ
-	y_need_move			SDWORD	0	; Èç¹ûyÒÑ¾­ÒªÅöÉÏÁË£¨is_y_collide==1£©£¬Ó¦¸ÃÒÆ¶¯¶àÉÙ
-	last_is_y_collide	BYTE	0	; yÉÏ´ÎÅö×²
+	collide_type		DWORD	0	; 1: æ™®é€šç –å—å’Œå·¦å³å¢™é¢ 2: å°–åˆº 8 å¤©èŠ±æ¿
+	last_collide_type	DWORD	0	; ä¸Šæ¬¡ç¢°æ’ç±»å‹
+	collide_index		DWORD	0	; è¿”å›ç¢°æ’ç –å—indexï¼ˆ0-11ï¼Œè®°å¾—å–å€æ—¶MUL TYPE bricksï¼‰
+	is_x_collide		BYTE	0	; xæ–¹å‘æ˜¯å¦ç¢°æ’
+	x_need_move			SDWORD	0	; å¦‚æœxå·²ç»è¦ç¢°ä¸Šäº†ï¼ˆis_x_collide==1ï¼‰ï¼Œåº”è¯¥ç§»åŠ¨å¤šå°‘
+	is_y_collide		BYTE	0	; yæ–¹å‘æ˜¯å¦ç¢°æ’ï¼ˆåœ¨ç –å—ä¸Š
+	y_need_move			SDWORD	0	; å¦‚æœyå·²ç»è¦ç¢°ä¸Šäº†ï¼ˆis_y_collide==1ï¼‰ï¼Œåº”è¯¥ç§»åŠ¨å¤šå°‘
+	last_is_y_collide	BYTE	0	; yä¸Šæ¬¡ç¢°æ’
 collision ends
 
 
@@ -105,51 +106,51 @@ RGB macro red,green,blue
 	mov al,red
 endm
 
-; ÓÎÏ·ÖĞ³£Á¿
+; æ¸¸æˆä¸­å¸¸é‡
 .const
-	my_window_width  EQU   480       ; ´°ÌåË®Æ½¿í¶È
-	my_window_height EQU   640       ; ´°ÌåÊúÖ±¸ß¶È
-	brick_width		 EQU   120       ; ×©¿éË®Æ½¿í¶È
-	brick_height	 EQU   24        ; ×©¿éÊúÖ±¸ß¶È
+	my_window_width  EQU   480       ; çª—ä½“æ°´å¹³å®½åº¦
+	my_window_height EQU   640       ; çª—ä½“ç«–ç›´é«˜åº¦
+	brick_width		 EQU   120       ; ç –å—æ°´å¹³å®½åº¦
+	brick_height	 EQU   24        ; ç –å—ç«–ç›´é«˜åº¦
 	brick_x_gap		 EQU   60
-	brick_up_speed	 EQU   4			; TODO: ¸Ä³É±äÁ¿£¬¸ù¾İÓÎÏ·½ø³Ì¸ü¸Ä
-	brick_y_gap		 EQU   64/brick_up_speed		 ; ÆÁÄ»ÊúÖ±·Ö¸ô¸ß¶È
+	brick_up_speed	 EQU   4		 ; TODO: æ”¹æˆå˜é‡ï¼Œæ ¹æ®æ¸¸æˆè¿›ç¨‹æ›´æ”¹
+	brick_y_gap		 EQU   64/brick_up_speed		 ; å±å¹•ç«–ç›´åˆ†éš”é«˜åº¦
 	brick_y_gap_in	 EQU   40
 	conveyor_speed_left	 EQU   -4
 	conveyor_speed_right EQU  4
 
-	dir_top          EQU   8          ; ÎÒÃÇÕı³£¼ûµ½µÄÉÏÏÂ×óÓÒ
+	dir_top          EQU   8          ; æˆ‘ä»¬æ­£å¸¸è§åˆ°çš„ä¸Šä¸‹å·¦å³
 	dir_down         EQU   4
 	dir_left         EQU   2
 	dir_right        EQU   1
 	
 	player_height    EQU   32
-	player_x_speed   EQU   6          ;Íæ¼Òx·½ÏòµÄËÙ¶È
-	
+	player_x_speed   EQU   6          ;ç©å®¶xæ–¹å‘çš„é€Ÿåº¦
 
 
 	; initialized data allocation
 .data
-	game_status      BYTE     0          ; 0 ¿ªÊ¼½çÃæ 1 °ïÖú½çÃæ 2 ÓÎÏ·½çÃæ 3 Íæ¼Ò1Ê¤Àû 4 Íæ¼Ò2Ê¤Àû
-	h_startpage      DWORD    0          ; ¿ªÊ¼½çÃæ
-	h_gamepage       DWORD    0          ; ÓÎÏ·½çÃæ
-	h_endpage        DWORD    0          ; ½áÊø½çÃæ
-	player_left_bitmap    DWORD    0          ; Íæ¼ÒÏò×óµÄÎ»Í¼
-	player_right_bitmap   DWORD    0          ; Íæ¼ÒÏòÓÒµÄÎ»Í¼
-	brick_normal_bitmap    DWORD    0          ; ÆÕÍ¨×©¿éµÄÎ»Í¼
-	brick_icy_bitmap    DWORD    0             ; ¹â»¬×©¿éµÄÎ»Í¼
-	brick_sharp_bitmap    DWORD    0             ; ·æÀû×©¿éµÄÎ»Í¼
-	brick_fragile_bitmap    DWORD    0             ; Ò×Ëé×©¿éµÄÎ»Í¼
-	brick_ceiling_bitmap   DWORD    0          ; Ìì»¨°å×©¿éµÄÎ»Í¼
-	brick_conveyor_left_bitmap    DWORD    0             ; Ïò×ó´«ËÍ×©¿éµÄÎ»Í¼
-	brick_conveyor_right_bitmap    DWORD    0             ; ÏòÓÒ´«ËÍ×©¿éµÄÎ»Í¼
-	game_counter     DWORD    0          ; ÓÎÏ·ÖĞµÄ¼ÆÊıÆ÷ Ã¿¼ÆÂú80ÇåÁã
-	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0,0>         ; Íæ¼Ò1 ³õÊ¼ÉúÃüÖµÉèÎª100
-	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; Í¼ÄÚ×î¶àÓĞ11ĞĞ×©¿é
-	bricks_tmp			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; Í¼ÄÚ×î¶àÓĞ11ĞĞ×©¿é
-	cur_collision	 collision	<0, 0, 0, 0, 0, 0, 0, 0>				; Åö×²ĞÅÏ¢
-	prick_lose_hp	 DWORD   0        ;¼â´Ìµ¼ÖÂÍæ¼ÒÊ§Ñª
-	ceiling_lose_hp  DWORD   0        ;Ìì»¨°åµ¼ÖÂÍæ¼ÒÊ§Ñª
+	game_status      BYTE     0          ; 0 å¼€å§‹ç•Œé¢ 1 å¸®åŠ©ç•Œé¢ 2 æ¸¸æˆç•Œé¢ 3 ç©å®¶1èƒœåˆ© 4 ç©å®¶2èƒœåˆ©
+	h_startpage      DWORD    0          ; å¼€å§‹ç•Œé¢
+	h_gamepage       DWORD    0          ; æ¸¸æˆç•Œé¢
+	h_endpage        DWORD    0          ; ç»“æŸç•Œé¢
+	player_left_bitmap    DWORD    0          ; ç©å®¶å‘å·¦çš„ä½å›¾
+	player_right_bitmap   DWORD    0          ; ç©å®¶å‘å³çš„ä½å›¾
+	brick_normal_bitmap    DWORD    0          ; æ™®é€šç –å—çš„ä½å›¾
+	brick_icy_bitmap    DWORD    0             ; å…‰æ»‘ç –å—çš„ä½å›¾
+	brick_sharp_bitmap    DWORD    0             ; é”‹åˆ©ç –å—çš„ä½å›¾
+	brick_fragile_bitmap    DWORD    0             ; æ˜“ç¢ç –å—çš„ä½å›¾
+	brick_ceiling_bitmap   DWORD    0          ; å¤©èŠ±æ¿ç –å—çš„ä½å›¾
+	brick_conveyor_left_bitmap    DWORD    0             ; å‘å·¦ä¼ é€ç –å—çš„ä½å›¾
+	brick_conveyor_right_bitmap    DWORD    0             ; å‘å³ä¼ é€ç –å—çš„ä½å›¾
+	game_counter     DWORD    0								; æ¸¸æˆä¸­çš„è®¡æ•°å™¨ è®¡æ»¡æ¸…é›¶
+	player1          player	  <<0, 24>, <32,32>,<0,0>,<0,32,0,32>,100,1,0,0>         ; ç©å®¶1 åˆå§‹ç”Ÿå‘½å€¼è®¾ä¸º100
+	bricks			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; å›¾å†…æœ€å¤šæœ‰11è¡Œç –å—
+	bricks_tmp			 brick 	  11 DUP (<<0, 0, 0, 0>, 1, 0>)   ; å›¾å†…æœ€å¤šæœ‰11è¡Œç –å—
+	cur_collision	 collision	<0, 0, 0, 0, 0, 0, 0, 0>				; ç¢°æ’ä¿¡æ¯
+	prick_lose_hp	 DWORD   0        ;å°–åˆºå¯¼è‡´ç©å®¶å¤±è¡€
+	ceiling_lose_hp  DWORD   0        ;å¤©èŠ±æ¿å¯¼è‡´ç©å®¶å¤±è¡€
+
 
 	game_over		 DWORD    0
 	score            DWORD    0
@@ -159,24 +160,22 @@ endm
 	strlen           DWORD    0
 	FontName         db "sans-serif",0
 
-	end_music	     BYTE    "Music\\music_end.wav",0
-	collide_music	 BYTE    "Music\\music_collide.wav",0
-	;gravity		     REAL4   0.03
 
-	paintstruct      PAINTSTRUCT <>   ; »æÖÆ½á¹¹Ìå
+
+	paintstruct      PAINTSTRUCT <>   ; ç»˜åˆ¶ç»“æ„ä½“
 
 
   ; -----------------------------
   ; uninitialised data allocation
   ; -----------------------------
     .data?
-        hInstance   DWORD ?          ; ÓÃÓÚ¼ÇÂ¼³ÌĞòÊµÀı
-        hWnd        DWORD ?          ; ¾ä±ú
+        hInstance   DWORD ?          ; ç”¨äºè®°å½•ç¨‹åºå®ä¾‹
+        hWnd        DWORD ?          ; å¥æŸ„
         hIcon       DWORD ?
         hCursor     DWORD ?
         CommandLine DWORD ?
 
-        sWid        DWORD ?          ; ´°¿ÚµÄ¿í¶ÈºÍ¸ß¶È
+        sWid        DWORD ?          ; çª—å£çš„å®½åº¦å’Œé«˜åº¦
         sHgt        DWORD ?
 
 		thread1     DWORD ?

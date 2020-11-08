@@ -104,6 +104,10 @@ IDR_WAVE_END            WAVE                    "C:\\Users\\86181\\Desktop\\asm\
 
 IDR_WAVE_COLLIDE        WAVE                    "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Music\\music_collide.wav"
 
+IDR_WAVE_START          WAVE                    "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Music\\music_start.wav"
+
+IDR_WAVE_ENTER          WAVE                    "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Music\\music_enter.wav"
+
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
