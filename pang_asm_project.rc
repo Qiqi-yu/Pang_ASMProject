@@ -50,33 +50,33 @@ END
 // Bitmap
 //
 
-IDB_BITMAP_GAMEBG       BITMAP                  "..\\Images\\game_bg.bmp"
+IDB_BITMAP_GAMEBG       BITMAP                  "Images\\game_bg.bmp"
 
-IDB_BITMAP_STARTBG      BITMAP                  "..\\Images\\start_bg.bmp"
+IDB_BITMAP_STARTBG      BITMAP                  "Images\\start_bg.bmp"
 
-IDB_BITMAP_ENDBG      BITMAP                  "..\\Images\\end_bg.bmp"
+IDB_BITMAP_ENDBG      BITMAP                    "Images\\end_bg.bmp"
 
-IDB_BITMAP_PLAYER_LEFT  BITMAP                  "..\\Images\\player_left.bmp"
+IDB_BITMAP_PLAYER_LEFT  BITMAP                  "Images\\player_left.bmp"
 
-IDB_BITMAP_PLAYER_RIGHT BITMAP                  "..\\Images\\player_right.bmp"
+IDB_BITMAP_PLAYER_RIGHT BITMAP                  "Images\\player_right.bmp"
 
-IDB_BITMAP_BRICK_NORMAL BITMAP                  "..\\Images\\brick_normal.bmp"
+IDB_BITMAP_BRICK_NORMAL BITMAP                  "Images\\brick_normal.bmp"
 
-IDB_BITMAP_BRICK_ICY    BITMAP                  "..\\Images\\brick_icy.bmp"
+IDB_BITMAP_BRICK_ICY    BITMAP                  "Images\\brick_icy.bmp"
 
-IDB_BITMAP_BRICK_SHARP  BITMAP                  "..\\Images\\brick_sharp.bmp"
+IDB_BITMAP_BRICK_SHARP  BITMAP                  "Images\\brick_sharp.bmp"
 
-IDB_BITMAP_BRICK_FRAGILE BITMAP                  "..\\Images\\brick_fragile.bmp"
+IDB_BITMAP_BRICK_FRAGILE BITMAP                  "Images\\brick_fragile.bmp"
 
-IDB_BITMAP_BRICK_CEILING BITMAP                  "..\\Images\\brick_ceiling.bmp"
+IDB_BITMAP_BRICK_CEILING BITMAP                  "Images\\brick_ceiling.bmp"
 
-IDB_BITMAP_BRICK_CONVEYOR_LEFT BITMAP                  "..\\Images\\brick_conveyor_left.bmp"
+IDB_BITMAP_BRICK_CONVEYOR_LEFT BITMAP            "Images\\brick_conveyor_left.bmp"
 
-IDB_BITMAP_BRICK_CONVEYOR_RIGHT BITMAP                  "..\\Images\\brick_conveyor_right.bmp"
+IDB_BITMAP_BRICK_CONVEYOR_RIGHT BITMAP           "Images\\brick_conveyor_right.bmp"
 
-IDB_BITMAP_PLAYER_LOSEHP_LEFT BITMAP                  "..\\Images\\lose_hp_left.bmp"
+IDB_BITMAP_PLAYER_LOSEHP_LEFT BITMAP             "Images\\lose_hp_left.bmp"
 
-IDB_BITMAP_PLAYER_LOSEHP_RIGHT BITMAP                  "..\\Images\\lose_hp_right.bmp"
+IDB_BITMAP_PLAYER_LOSEHP_RIGHT BITMAP            "Images\\lose_hp_right.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -84,13 +84,13 @@ IDB_BITMAP_PLAYER_LOSEHP_RIGHT BITMAP                  "..\\Images\\lose_hp_righ
 // WAVE
 //
 
-IDR_WAVE_END            WAVE                    "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Music\\music_end.wav"
+IDR_WAVE_END            WAVE                    "Music\\music_end.wav"
 
-IDR_WAVE_COLLIDE        WAVE                    "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Music\\music_collide.wav"
+IDR_WAVE_COLLIDE        WAVE                    "Music\\music_collide.wav"
 
-IDR_WAVE_START          WAVE                    "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Music\\music_start.wav"
+IDR_WAVE_START          WAVE                    "Music\\music_start.wav"
 
-IDR_WAVE_ENTER          WAVE                    "C:\\Users\\86181\\Desktop\\asm\\pang-asm-project\\pang_asm_project\\Music\\music_enter.wav"
+IDR_WAVE_ENTER          WAVE                    "Music\\music_enter.wav"
 
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////

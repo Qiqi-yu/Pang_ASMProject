@@ -11,21 +11,21 @@
 	
 
 .code
-start:  ;ç¨‹åºå…¥å£ç‚¹
-    ; è·å¾—æ¨¡å—å¥æŸ„
+start:  ;³ÌĞòÈë¿Úµã
+    ; »ñµÃÄ£¿é¾ä±ú
 	invoke GetModuleHandle, NULL
 	mov hInstance, eax
 
-	; å¯èƒ½ä¸éœ€è¦å‘½ä»¤è¡Œå‚æ•°
+	; ¿ÉÄÜ²»ĞèÒªÃüÁîĞĞ²ÎÊı
 	invoke GetCommandLine
 	mov  CommandLine, eax
-	; å¾—åˆ°å›¾æ ‡å’Œå…‰æ ‡
+	; µÃµ½Í¼±êºÍ¹â±ê
     mov hIcon,       rv(LoadIcon,hInstance,103)
     mov hCursor,     rv(LoadCursor,NULL,IDC_ARROW)
-	; å¾—åˆ°æ•´ä¸ªå±å¹•çš„å°ºå¯¸
+	; µÃµ½Õû¸öÆÁÄ»µÄ³ß´ç
     mov sWid,        rv(GetSystemMetrics,SM_CXSCREEN)
     mov sHgt,        rv(GetSystemMetrics,SM_CYSCREEN)
-	; è°ƒç”¨ä¸»å‡½æ•°
+	; µ÷ÓÃÖ÷º¯Êı
     call Main
     invoke ExitProcess, eax
 
@@ -46,7 +46,7 @@ Main proc
   ; --------------------------------------
 
     STRING szClassName,   "GameClass"
-    STRING szDisplayName, "Happy Game"
+    STRING szDisplayName, "Go Downstairs"
 
   ; ---------------------------------------------------
   ; set window class attributes in WNDCLASSEX structure
@@ -57,7 +57,7 @@ Main proc
     mov wc.cbClsExtra,     NULL
     mov wc.cbWndExtra,     NULL
     m2m wc.hInstance,      hInstance
-    m2m wc.hbrBackground,  NULL                 ;COLOR_BTNFACE+1 ä¸éœ€è¦background
+    m2m wc.hbrBackground,  NULL                 ;COLOR_BTNFACE+1 ²»ĞèÒªbackground
     mov wc.lpszMenuName,   NULL
     mov wc.lpszClassName,  OFFSET szClassName  ;;
     m2m wc.hIcon,          hIcon
@@ -102,12 +102,12 @@ Main proc
     invoke ShowWindow,hWnd, SW_SHOWNORMAL
     invoke UpdateWindow,hWnd
 
-	; æ¶ˆæ¯å¾ªç¯
+	; ÏûÏ¢Ñ­»·
     call MsgLoop
     ret
 Main endp
 
-; æ¶ˆæ¯å¾ªç¯
+; ÏûÏ¢Ñ­»·
 MsgLoop proc
     LOCAL msg:MSG
     push ebx
@@ -125,20 +125,20 @@ MsgLoop proc
 MsgLoop endp
 
 WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
-	; å¤„ç†çª—å£åˆ›å»ºåçš„ä¸€äº›æ“ä½œ
+	; ´¦Àí´°¿Ú´´½¨ºóµÄÒ»Ğ©²Ù×÷
 	.IF uMsg == WM_CREATE
 		invoke startGame
 
 	.ELSEIF uMsg == WM_DESTROY
-		; é€€å‡ºçº¿ç¨‹
+		; ÍË³öÏß³Ì
 		invoke PostQuitMessage, NULL
 
 	.ELSEIF uMsg == WM_PAINT
-		; è°ƒç”¨æ›´æ–°åœºæ™¯å‡½æ•°ï¼ŒWM_PAINTç”±paintThreadçš„InvalidateRectå‘å‡º
+		; µ÷ÓÃ¸üĞÂ³¡¾°º¯Êı£¬WM_PAINTÓÉpaintThreadµÄInvalidateRect·¢³ö
 		invoke updateScene
 
 	.ELSEIF uMsg == WM_CHAR
-		; å¤„ç†enteré”®æŒ‰ä¸‹äº‹ä»¶
+		; ´¦Àíenter¼ü°´ÏÂÊÂ¼ş
 		.IF wParam == 13
 			pushad
 			invoke PlaySound, 153, hInstance, SND_RESOURCE or SND_ASYNC
@@ -149,6 +149,8 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 				invoke initPlayer
 				mov prick_lose_hp,2
 				mov ceiling_lose_hp,10
+				mov cur_collision.is_y_collide, 0
+				mov sleep_time, 30
 				mov game_status, 1
 			.ELSEIF game_status == 2
 				mov game_status, 0
@@ -157,21 +159,21 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 				popad
 			.ENDIF
 		.ENDIF
-		; å¤„ç†escé”®æŒ‰ä¸‹äº‹ä»¶
+		; ´¦Àíesc¼ü°´ÏÂÊÂ¼ş
 		.IF wParam == 27
 			invoke PostQuitMessage, NULL
 		.ENDIF
 
 	.ELSEIF uMsg == WM_KEYUP
 		invoke processKeyUp, wParam
-		; å¤„ç†é”®ç›˜æŠ¬èµ·äº‹ä»¶
+		; ´¦Àí¼üÅÌÌ§ÆğÊÂ¼ş
 
 	.ELSEIF uMsg == WM_KEYDOWN
 		invoke processKeyDown, wParam
-		; å¤„ç†é”®ç›˜æŒ‰ä¸‹äº‹ä»¶
+		; ´¦Àí¼üÅÌ°´ÏÂÊÂ¼ş
 
 	.ELSE
-		; é»˜è®¤æ¶ˆæ¯å¤„ç†å‡½æ•°
+		; Ä¬ÈÏÏûÏ¢´¦Àíº¯Êı
 		invoke DefWindowProc,hWin,uMsg,wParam,lParam
 		ret
 	.ENDIF
@@ -180,13 +182,13 @@ WndProc proc hWin:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
 WndProc endp
 
 startGame proc
-		; åŠ è½½ä½å›¾èµ„æº
+		; ¼ÓÔØÎ»Í¼×ÊÔ´
 		invoke loadGameImages
-		; åˆ›é€ é€»è¾‘çº¿ç¨‹
+		; ´´ÔìÂß¼­Ïß³Ì
 		mov eax, OFFSET logicThread
 		invoke CreateThread, NULL, NULL, eax, 0, 0, addr thread1
 		invoke CloseHandle, eax
-		; åˆ›é€ ç»˜åˆ¶çº¿ç¨‹
+		; ´´Ôì»æÖÆÏß³Ì
 		mov eax, OFFSET paintThread
 		invoke CreateThread, NULL, NULL, eax, 0, 0, addr thread2
 		invoke CloseHandle, eax
@@ -199,122 +201,131 @@ startGame endp
 
 initPlayer proc
 	mov player1.pos.x,224
-	mov player1.pos.y,200
+	mov player1.pos.y,180
 	mov player1.speed.x,0
 	mov player1.speed.y,0
 	mov player1.hp,100
 	mov player1.score,0
 	mov player1.on_ice,0
 	mov player1.on_conveyor,0
-
+	mov player1.lose_hp,0
 	ret
 initPlayer endp
 
 loadGameImages proc
-	; åŠ è½½å¼€å§‹ç•Œé¢çš„ä½å›¾
+	; ¼ÓÔØ¿ªÊ¼½çÃæµÄÎ»Í¼
 	invoke LoadBitmap, hInstance, 500
 	mov h_startpage, eax
 
-    ; åŠ è½½æ¸¸æˆç•Œé¢çš„ä½å›¾
+    ; ¼ÓÔØÓÎÏ·½çÃæµÄÎ»Í¼
 	invoke LoadBitmap, hInstance, 501
 	mov h_gamepage, eax
 
-	; åŠ è½½ç»“æŸç•Œé¢çš„ä½å›¾
+	; ¼ÓÔØ½áÊø½çÃæµÄÎ»Í¼
 	invoke LoadBitmap, hInstance, 502
 	mov h_endpage, eax
 
-	; åŠ è½½ç©å®¶å‘å·¦çš„ä½å›¾
+	; ¼ÓÔØÍæ¼ÒÏò×óµÄÎ»Í¼
 	invoke LoadBitmap, hInstance, 504
 	mov player_left_bitmap, eax
 
-	; åŠ è½½ç©å®¶å‘å³çš„ä½å›¾
+	; ¼ÓÔØÍæ¼ÒÏòÓÒµÄÎ»Í¼
 	invoke LoadBitmap, hInstance, 505
 	mov player_right_bitmap, eax
 
-	; åŠ è½½æ™®é€šç –å—çš„ä½å›¾
+	; ¼ÓÔØÆÕÍ¨×©¿éµÄÎ»Í¼
 	invoke LoadBitmap, hInstance, 141
 	mov brick_normal_bitmap, eax
 
-	; åŠ è½½å†°å—çš„ä½å›¾
+	; ¼ÓÔØ¹â»¬×©¿éµÄÎ»Í¼
 	invoke LoadBitmap, hInstance, 142
 	mov brick_icy_bitmap, eax
 
-	; åŠ è½½å°–åˆºçš„ä½å›¾
+	; ¼ÓÔØ·æÀû×©¿éµÄÎ»Í¼
 	invoke LoadBitmap, hInstance, 143
 	mov brick_sharp_bitmap, eax
 
-	; åŠ è½½æ˜“ç¢ç –å—çš„ä½å›¾
+	; ¼ÓÔØÒ×Ëé×©¿éµÄÎ»Í¼
 	invoke LoadBitmap, hInstance, 144
 	mov brick_fragile_bitmap, eax
 
-	; åŠ è½½å¤©èŠ±æ¿çš„ä½å›¾
+	; ¼ÓÔØÌì»¨°å×©¿éµÄÎ»Í¼
 	invoke LoadBitmap, hInstance, 146
 	mov brick_ceiling_bitmap, eax
 
-	; åŠ è½½å‘å·¦ä¼ é€å¸¦çš„ä½å›¾
+	; ¼ÓÔØÏò×ó´«ËÍ×©¿éµÄÎ»Í¼
 	invoke LoadBitmap, hInstance, 147
 	mov brick_conveyor_left_bitmap, eax
 
-	; åŠ è½½å‘å³ä¼ é€å¸¦çš„ä½å›¾
+	; ¼ÓÔØÏòÓÒ´«ËÍ×©¿éµÄÎ»Í¼
 	invoke LoadBitmap, hInstance, 148
 	mov brick_conveyor_right_bitmap, eax
 
-	; åŠ è½½ç©å®¶å‘å·¦æ—¶å—ä¼¤çš„ä½å›¾
 	invoke LoadBitmap, hInstance, 154
 	mov player_losehp_left_bitmap, eax
 
-	; åŠ è½½ç©å®¶å‘å³çš„ä½å›¾
 	invoke LoadBitmap, hInstance, 155
 	mov player_losehp_right_bitmap, eax
 
 	ret
 loadGameImages endp
 
-; ä¸€ä¸ªçº¿ç¨‹å‡½æ•°ï¼Œæ ¹æ®åœºæ™¯çš„çŠ¶æ€ä¸æ–­å¾ªç¯ï¼Œæ¸¸æˆçŠ¶æ€æ—¶å€™ï¼Œä¸æ–­è¿›è¡Œç¢°æ’åˆ¤æ–­ç­‰ç­‰
+; Ò»¸öÏß³Ìº¯Êı£¬¸ù¾İ³¡¾°µÄ×´Ì¬²»¶ÏÑ­»·£¬ÓÎÏ·×´Ì¬Ê±ºò£¬²»¶Ï½øĞĞÅö×²ÅĞ¶ÏµÈµÈ
 logicThread proc p:DWORD
 	;LOCAL area:RECT
 	game:
-	; å¼€å§‹ç•Œé¢ï¼Œéœ€è¦é€šè¿‡enterè¿›å…¥
+	; ¿ªÊ¼½çÃæ£¬ĞèÒªÍ¨¹ıenter½øÈë
 	.WHILE game_status == 0
 		invoke Sleep, 1000
 	.ENDW
 
-	; æ¸¸æˆç•Œé¢
+	; ÓÎÏ·½çÃæ
 	.WHILE game_status == 1
 		
-		COMMENT !
-		;æ ¹æ®åˆ†æ•°ä¿®æ”¹ç –å—ä¸Šå‡é€Ÿåº¦ï¼Œç¢°æ’æ£€æµ‹ç­‰ç›¸å…³å˜é‡éœ€ä¿®æ”¹
-		.IF player1.score < 5
-		mov brick_up_speed,1
-		.ELSEIF player1.score < 20
-		mov brick_up_speed,2
-		.ELSEIF player1.score < 100
-		mov brick_up_speed,4
-		.ELSE 
-		mov brick_up_speed,8
-		.ENDIF
-		!
-
-		invoke Sleep, 30
-		; é‡ç½®è®¡æ•°å™¨
-		.IF game_counter >= brick_y_gap
+		invoke Sleep, sleep_time
+		mov eax, brick_y_gap
+		; ÖØÖÃ¼ÆÊıÆ÷
+		.IF game_counter >= eax
 			mov game_counter, 0
 		.ENDIF
-		; æ”¹å˜è®¡æ•°å™¨å¹¶ä¸Šç§»ç –å—
+		; ¸Ä±ä¼ÆÊıÆ÷²¢ÉÏÒÆ×©¿é
 		inc game_counter
 		invoke changeBricks
 
-		; ç¢°æ’æ£€æµ‹
+		;¸ù¾İ·ÖÊıĞŞ¸Ä×©¿éÉÏÉıËÙ¶È£¬Åö×²¼ì²âµÈÏà¹Ø±äÁ¿ĞèĞŞ¸Ä
+		.IF player1.score < 4
+			mov brick_up_speed,1
+		.ELSEIF player1.score < 20
+			mov brick_up_speed,2
+		.ELSEIF player1.score < 100
+			mov brick_up_speed,4
+		.ELSE 
+			mov brick_up_speed,8
+		.ENDIF
+		.IF player1.score > 500
+			mov sleep_time, 15
+		.ELSEIF	player1.score > 200
+			mov sleep_time, 20
+		.ELSEIF player1.score > 150
+			mov sleep_time, 24
+		.ENDIF
+		mov edx, 0
+		mov eax, 64
+		mov ecx, brick_up_speed
+		div ecx
+		mov brick_y_gap, eax
+
+		; Åö×²¼ì²â
 		invoke colliDetect
 
-		; è§’è‰²ç§»åŠ¨
+		; ½ÇÉ«ÒÆ¶¯
 		invoke movePlayer, addr player1
 
-		; å»é™¤æ˜“ç¢ç –å—
+		; È¥³ıÒ×Ëé×©¿é
 		invoke removeFragileBrick
 	.ENDW
 
-	; ç»“æŸç•Œé¢
+	; ½áÊø½çÃæ
 	.WHILE game_status == 2
 		invoke Sleep, 30
 
@@ -325,7 +336,7 @@ logicThread proc p:DWORD
 	ret
 logicThread endp
 
-; ä¸æ–­è¿›è¡Œç»˜åˆ¶æµç¨‹
+; ²»¶Ï½øĞĞ»æÖÆÁ÷³Ì
 paintThread proc p:DWORD
 	.WHILE 1
 		invoke Sleep, 10
@@ -334,7 +345,7 @@ paintThread proc p:DWORD
 	ret
 paintThread endp
 
-; åˆå§‹åŒ–ç –å—å‡½æ•°
+; ³õÊ¼»¯×©¿éº¯Êı
 initialBricks proc uses esi edx ecx eax ebx edi
 	LOCAL empty_line_num:DWORD
 	assume esi:ptr brick
@@ -342,10 +353,11 @@ initialBricks proc uses esi edx ecx eax ebx edi
 	mov	   esi, offset bricks
 	mov    edi, brick_y_gap_in  ; 40
 	mov	   game_counter, 0
+	mov	   brick_y_gap, 64
 	invoke clock
 	invoke srand, eax
 
-	; å°†å‰ä¸‰ä¸ªç –å—ç½®äºçª—å£å¤–
+	; ½«Ç°Èı¸ö×©¿éÖÃÓÚ´°¿ÚÍâ
 	mov	   empty_line_num, 3
 	mov	   ecx, empty_line_num
 emptyLine:
@@ -362,7 +374,7 @@ emptyLine:
 		add		esi, TYPE bricks
 		loop	emptyLine
 
-	;ç”Ÿæˆç¬¬ä¸€ä¸ªåœ¨ä¸­å¤®çš„ç –å—
+	;Éú³ÉµÚÒ»¸öÔÚÖĞÑëµÄ×©¿é
 	mov		eax, my_window_width
 	sub		eax, brick_width
 	shr     eax, 1
@@ -390,9 +402,9 @@ L1:
 		mov		edx, 0
 		mov		ecx, 7
 		div		ecx
-		; edxä¸ºæ‰€åœ¨åˆ—æ•°
-		mov		ebx, edx		
-		mov		eax, brick_x_gap  
+		; edxÎªËùÔÚÁĞÊı
+		mov		ebx, edx		; ³ËÊı ×©¿éµÄÁĞÊı
+		mov		eax, brick_x_gap  ; ±»³ËÊı  75
 		mul		ebx
 		mov		[esi].boundary.left, eax
 		add		eax, brick_width
@@ -435,34 +447,38 @@ L1:
 	ret
 initialBricks endp
 
-; ç –å—æ›´æ–°å‡½æ•°
-changeBricks proc uses ecx esi edi ebx edx
+; ×©¿é¸üĞÂº¯Êı
+changeBricks proc uses eax ecx esi edi ebx edx
 	assume edi:ptr brick
 	assume esi:ptr brick
 	mov	   edi, offset bricks
 
+	invoke Sleep, 5
 	invoke clock
 	invoke srand, eax
 
-	.IF game_counter >= brick_y_gap
+	mov eax, brick_y_gap
+
+	.IF game_counter >= eax
 		cld
 		mov		esi, edi
 		add		esi, type bricks
 		mov	    edi, offset bricks_tmp
-		mov		ebx, 10			  ; ä¹˜æ•°    ç –å—æ•°é‡
-		mov		eax, type bricks  
+		mov		ebx, 10			  ; ³ËÊı    ×©¿éÊıÁ¿
+		mov		eax, type bricks  ; ±»³ËÊı
 		mul		ebx
 		mov		ecx, eax
 		rep		movsb
-		;ç”Ÿæˆä¸€ä¸ªæ–°çš„ç –å—
+		;Éú³ÉÒ»¸öĞÂµÄ×©¿é
 		push	edi
-		invoke  rand
+		invoke	clock
 		pop		edi
 		mov		edx, 0
 		mov		ecx, 7
 		div		ecx
-		mov		ebx, edx		
-		mov		eax, brick_x_gap  
+		; edxÎªËùÔÚÁĞÊı
+		mov		ebx, edx		; ³ËÊı ×©¿éµÄÁĞÊı
+		mov		eax, brick_x_gap  ; ±»³ËÊı  75
 		mul		ebx
 
 		mov		[edi].boundary.left, eax
@@ -476,9 +492,7 @@ changeBricks proc uses ecx esi edi ebx edx
 
 		push	edi
 		
-		;invoke	rand
-		invoke  Sleep, 7
-		invoke  clock
+		invoke	rand
 		pop		edi
 		mov		edx, 0
 		mov		ecx, 12
@@ -502,8 +516,8 @@ changeBricks proc uses ecx esi edi ebx edx
 		cld
 		mov		esi, offset bricks_tmp
 		mov	    edi, offset bricks
-		mov		ebx, 11			  
-		mov		eax, type bricks  
+		mov		ebx, 11			  ; ³ËÊı    ×©¿éÊıÁ¿
+		mov		eax, type bricks  ; ±»³ËÊı
 		mul		ebx
 		mov		ecx, eax
 		rep		movsb
@@ -513,10 +527,9 @@ changeBricks proc uses ecx esi edi ebx edx
 	mov	   edi, offset bricks
 
 UP_BRICK:
-	sub		[edi].boundary.top, brick_up_speed
-	;dec		[edi].boundary.top
-	sub		[edi].boundary.bottom, brick_up_speed
-	;dec		[edi].boundary.bottom
+	mov		eax, brick_up_speed
+	sub		[edi].boundary.top, eax
+	sub		[edi].boundary.bottom, eax
 	add		edi, TYPE brick
 	loop	UP_BRICK
 
@@ -543,7 +556,7 @@ colliDetect proc uses eax ebx ecx esi edi edx
 	mov [edi].last_is_y_collide, al
 	mov [edi].collide_type,0
 
-	; è®¡ç®—å½“å‰å·¦ã€å³ã€ä¸‹
+	; ¼ÆËãµ±Ç°×ó¡¢ÓÒ¡¢ÏÂ
 	mov eax, [esi].pos.x
 	mov cur_left, eax
 	add eax, [esi].psize.x
@@ -554,13 +567,12 @@ colliDetect proc uses eax ebx ecx esi edi edx
 	mov cur_bottom, eax
 
 	.IF [edi].is_y_collide == 1
-		sub cur_top, brick_up_speed
-		; dec cur_top
-		sub cur_bottom, brick_up_speed
-		; dec cur_bottom
+		mov eax, brick_up_speed
+		sub cur_top, eax
+		sub cur_bottom, eax
 	.ENDIF
 
-	; è®¡ç®—è€ƒè™‘é€Ÿåº¦åçš„å·¦ã€å³ã€ä¸‹
+	; ¼ÆËã¿¼ÂÇËÙ¶ÈºóµÄ×ó¡¢ÓÒ¡¢ÏÂ
 	mov eax, cur_left
 	add eax, [esi].speed.x
 	mov next_left, eax
@@ -574,29 +586,27 @@ colliDetect proc uses eax ebx ecx esi edi edx
 	add eax, [esi].psize.y
 	mov next_bottom, eax
 
-	; æ£€æµ‹x
-	; ä¼˜å…ˆçº§ï¼šä¾§æ’åˆ°ç –å—å°±ä¸ä¼šæ’åˆ°å¢™å£äº†
-	; å› æ­¤åº”è¯¥å…ˆæ£€æµ‹å¢™å£å†æ£€æµ‹ç –å—
-	; æ’åˆ°å·¦å¢™ï¼šnext_left < 0
-	; æ’åˆ°å³å¢™ï¼šnext_right > my_window_width
+	; ¼ì²âx
+	; ÓÅÏÈ¼¶£º²à×²µ½×©¿é¾Í²»»á×²µ½Ç½±ÚÁË
+	; Òò´ËÓ¦¸ÃÏÈ¼ì²âÇ½±ÚÔÙ¼ì²â×©¿é
+	; ×²µ½×óÇ½£ºnext_left < 0
+	; ×²µ½ÓÒÇ½£ºnext_right > my_window_width
 	mov [edi].is_x_collide, 0
 	.IF next_left < 0
 		mov [edi].is_x_collide, 1
 		mov eax, 0
 		sub eax, cur_left
 		mov [edi].x_need_move, eax
-		; mov [edi].collide_type, 1
 	.ELSEIF next_right > my_window_width
 		mov [edi].is_x_collide, 1
 		mov eax, my_window_width
 		sub eax, cur_right
 		mov [edi].x_need_move, eax
-		; mov [edi].collide_type, 1
 	.ENDIF
 
 
 
-	; ç”±å‰å¾€åå¾ªç¯æ£€æµ‹æ˜¯å¦å’Œç –å—ç¢°æ’
+	; ÓÉÇ°ÍùºóÑ­»·¼ì²âÊÇ·ñºÍ×©¿éÅö×²
 	mov ecx, 11
 	mov [edi].is_y_collide, 0
 
@@ -604,42 +614,38 @@ collide_y:
 	push ecx
 	mov ebx, ecx
 	mov eax, SIZEOF brick
-	mul ebx			; eax å­˜åç§»
-	; mul æ”¹å˜ edxï¼Œå› æ­¤éœ€è¦å…ˆæ±‚edx = offset bricks
+	mul ebx			; eax ´æÆ«ÒÆ
+	; mul ¸Ä±ä edx£¬Òò´ËĞèÒªÏÈÇóedx = offset bricks
 	mov edx, offset bricks
 	add edx, eax
 	mov ecx, [edx].boundary.top
-	; inc ecx
 	add ecx, brick_up_speed
 	mov ebx, [edx].boundary.left
 	mov eax, [edx].boundary.right
-	; æ£€æµ‹æ˜¯å¦ç©¿è¶Šç –å—
+	; ¼ì²âÊÇ·ñ´©Ô½×©¿é
 	.IF (cur_bottom <= ecx && next_bottom >= ecx) && ((cur_right > ebx && cur_left < eax) ||  (next_right > ebx && next_left < eax))
 		mov [edi].is_y_collide, 1
 		sub ecx, cur_bottom
-		sub ecx, brick_up_speed
-		; dec ecx							; ç§»åŠ¨è·ç¦»ä¸º brick.boundary.top - cur_bottom - 1
+		sub ecx, brick_up_speed							; ÒÆ¶¯¾àÀëÎª brick.boundary.top - cur_bottom - brick_up_speed
 		mov [edi].y_need_move, ecx
 		mov ecx, [edx].brick_type
-		mov [edi].collide_type, ecx		; è®°å½•ç¢°æ’ç –å—ç±»å‹
+		mov [edi].collide_type, ecx		; ¼ÇÂ¼Åö×²×©¿éÀàĞÍ
 		pop ecx
-		mov [edi].collide_index, ecx	; è®°å½•ç¢°æ’ç –å—index
+		mov [edi].collide_index, ecx	; ¼ÇÂ¼Åö×²×©¿éindex
 		push ecx
-		; jmp endgame_detect
 	.ENDIF
 	pop ecx
 	loop collide_y
 
 	mov ecx, 11
 
-	; ä¾§æ’ç –å—
+	; ²à×²×©¿é
 collide_x:
 	push ecx
 	mov ebx, ecx
 	mov eax, SIZEOF brick
-	mul ebx			; eax å­˜åç§»
-	; mul æ”¹å˜ edxï¼Œå› æ­¤éœ€è¦å…ˆæ±‚edx = offset bricks
-	
+	mul ebx			; eax ´æÆ«ÒÆ
+	; mul ¸Ä±ä edx£¬Òò´ËĞèÒªÏÈÇóedx = offset bricks
 	mov edx, offset bricks
 	add edx, eax
 	mov ebx, [edx].boundary.top
@@ -662,20 +668,19 @@ collide_x:
 	pop ecx
 	loop collide_x
 
-	; æ£€æµ‹y
-	; æ£€æµ‹æ˜¯å¦ç¢°åˆ°ä¸Šæ–¹å°–åˆºï¼ˆcur_top <= brick_heightï¼‰
-	; ä¸Šæ–¹ç¢°åˆ°å°–åˆºåå°†è‡ªåŠ¨ä¸‹è½
-	;.IF cur_top <= brick_height
+	; ¼ì²ây
+	; ¼ì²âÊÇ·ñÅöµ½ÉÏ·½¼â´Ì£¨cur_top <= brick_height£©
+	; ÉÏ·½Åöµ½¼â´Ìºó½«×Ô¶¯ÏÂÂä
 	.IF cur_top <= brick_height
 		mov [edi].is_y_collide, 0
-		mov [edi].collide_type, 8		; 2è¡¨ç¤ºç¢°åˆ°å°–åˆº
+		mov [edi].collide_type, 8		; 2±íÊ¾Åöµ½¼â´Ì
 	.ENDIF
 
-; æ£€æµ‹æ˜¯å¦æ‰å‡ºç”»é¢(next_top > my_window_height)
+; ¼ì²âÊÇ·ñµô³ö»­Ãæ(next_top > my_window_height)
 endgame_detect:
 	.IF next_top > my_window_height
 		mov [edi].is_y_collide, 1
-		mov [edi].collide_type, 7			; 7è¡¨æ‰å‡ºç”»é¢
+		mov [edi].collide_type, 7			; 7±íµô³ö»­Ãæ
 	.ENDIF
 
 	.IF [edi].is_y_collide == 1 && [edi].last_is_y_collide == 0 && [edi].collide_type != 7
@@ -737,12 +742,14 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 
 
 	.IF [edi].collide_type == 2  
+	mov player1.lose_hp,1
 	mov ebx,prick_lose_hp
 	sub [eax].hp,ebx
 	mov [eax].on_ice,0
 	mov [eax].on_conveyor,0
 
 	.ELSEIF [edi].collide_type == 3
+	mov player1.lose_hp,0
 		.IF [edi].last_collide_type!=3
 			.IF [eax].hp < 100
 			add [eax].hp,5
@@ -752,6 +759,7 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	mov [eax].on_conveyor,0
 
 	.ELSEIF [edi].collide_type==4 
+	mov player1.lose_hp,0
 		.IF [edi].last_collide_type!=4
 			.IF [eax].hp < 100
 			add [eax].hp,5
@@ -762,6 +770,7 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	mov [eax].on_ice,0
 
 	.ELSEIF [edi].collide_type==5
+	mov player1.lose_hp,0
 		.IF [edi].last_collide_type!=5
 			.IF [eax].hp < 100
 			add [eax].hp,5
@@ -778,6 +787,7 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 	mov [eax].hp,0
 
 	.ELSEIF [edi].collide_type == 6
+	mov player1.lose_hp,0
 	mov [eax].on_ice,0
 	mov [eax].on_conveyor,0
 		.IF [edi].last_collide_type!=6
@@ -787,6 +797,7 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 		.ENDIF
 
 	.ELSEIF [edi].collide_type == 1
+	mov player1.lose_hp,0
 	mov [eax].on_ice,0
 	mov [eax].on_conveyor,0
 		.IF [edi].last_collide_type!=1
@@ -796,12 +807,14 @@ movePlayer proc uses eax ebx ecx edi, addrPlayer1:DWORD
 		.ENDIF
 
 	.ELSEIF [edi].collide_type == 8
+	mov player1.lose_hp,1
 	mov ebx,ceiling_lose_hp
 	sub [eax].hp,ebx
 	mov [eax].on_ice,0
 	mov [eax].on_conveyor,0
 
 	.ELSE
+	mov player1.lose_hp,0
 	mov [eax].on_ice,0
 	mov [eax].on_conveyor,0
 	.ENDIF
@@ -836,16 +849,20 @@ processKeyDown proc wParam:WPARAM
 			.IF player1.on_conveyor == 0
 			mov player1.speed.x,player_x_speed
 			neg player1.speed.x
-			;å½“åœ¨å‘å³çš„ä¼ é€å¸¦ä¸Šæ—¶ï¼Œå‘å·¦çš„é€Ÿåº¦å‡ç¼“
+			;µ±ÔÚÏòÓÒµÄ´«ËÍ´øÉÏÊ±£¬Ïò×óµÄËÙ¶È¼õ»º
 			.ELSEIF player1.on_conveyor == 2
-			mov player1.speed.x,conveyor_speed_left
+			mov player1.speed.x,player_conveyor_speed_left
+			;.ELSEIF player1.on_conveyor == 1
+			;mov player1.speed.x,conveyor_speed_up_left
 			.ENDIF
 		.ELSEIF wParam == VK_RIGHT
 			.IF player1.on_conveyor == 0
 			mov player1.speed.x,player_x_speed
 			.ELSEIF player1.on_conveyor == 1
-			;å½“åœ¨å‘å·¦çš„ä¼ é€å¸¦ä¸Šæ—¶ï¼Œå‘å³çš„é€Ÿåº¦å‡ç¼“
-			mov player1.speed.x,conveyor_speed_right
+			;µ±ÔÚÏò×óµÄ´«ËÍ´øÉÏÊ±£¬ÏòÓÒµÄËÙ¶È¼õ»º
+			mov player1.speed.x,player_conveyor_speed_right
+			;.ELSEIF player1.on_conveyor == 2
+			;mov player1.speed.x,conveyor_speed_up_right
 			.ENDIF
 		.ENDIF
 		.IF player1.speed.x < 0
@@ -869,7 +886,7 @@ processKeyUp proc wParam:WPARAM
 processKeyUp endp
 
 
-; åœºæ™¯æ›´æ–°å‡½æ•°
+; ³¡¾°¸üĞÂº¯Êı
 updateScene proc uses eax
 	LOCAL member_hdc:HDC
 	LOCAL member_hdc2:HDC
@@ -886,17 +903,26 @@ updateScene proc uses eax
 	invoke CreateCompatibleBitmap, hdc, my_window_width, my_window_height
 	mov h_bitmap, eax
 
-	;å°†ä½å›¾é€‰æ‹©åˆ°å…¼å®¹DCä¸­
+	;½«Î»Í¼Ñ¡Ôñµ½¼æÈİDCÖĞ
 	invoke SelectObject, member_hdc, h_bitmap
 
+	;»æÖÆ±³¾°
 	invoke paintBackground, member_hdc, member_hdc2
+
+    ;»æÖÆ×©¿é
 	invoke paintBricks, member_hdc, member_hdc2
+
+	;»æÖÆÌì»¨°å
 	invoke paintCeiling, member_hdc, member_hdc2
+
+    ;»æÖÆÈËÎï
 	invoke paintPlayers, member_hdc, member_hdc2
+
+	;»æÖÆ·ÖÊı
 	invoke paintScore, member_hdc
 
-	; BitBltï¼ˆhDestDC, x, y, nWidth, nheight, hSrcDC, xSrc, ySrc, dwRopï¼‰
-	; å°†æºçŸ©å½¢åŒºåŸŸç›´æ¥æ‹·è´åˆ°ç›®æ ‡åŒºåŸŸï¼šSRCCOPY
+	; BitBlt£¨hDestDC, x, y, nWidth, nheight, hSrcDC, xSrc, ySrc, dwRop£©
+	; ½«Ô´¾ØĞÎÇøÓòÖ±½Ó¿½±´µ½Ä¿±êÇøÓò£ºSRCCOPY
 	invoke BitBlt, hdc, 0, 0, my_window_width, my_window_height, member_hdc, 0, 0, SRCCOPY
 
 
@@ -908,6 +934,9 @@ updateScene proc uses eax
 updateScene endp
 
 
+
+
+; ±³¾°Í¼Æ¬»æÖÆº¯Êı
 paintBackground proc  member_hdc1:HDC, member_hdc2:HDC
 	
 	.IF game_status == 0
@@ -939,20 +968,20 @@ paintCeiling proc uses ecx, member_hdc1:HDC, member_hdc2:HDC
 	ret
 paintCeiling endp
 
-
+; ÓÎÏ·Ö÷½Ç»æÖÆº¯Êı
 paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
 	.IF game_status == 1
 		.IF player1.dir == dir_left
-			.IF player1.lose_hp == 0 
+			.IF player1.lose_hp == 0
 				invoke SelectObject, member_hdc2, player_left_bitmap
-			.ELSE 
+			.ELSE
 				invoke SelectObject, member_hdc2, player_losehp_left_bitmap
 			.ENDIF
 		.ELSEIF player1.dir == dir_right
 			invoke SelectObject, member_hdc2, player_right_bitmap
-			.IF player1.lose_hp == 0 
+			.IF player1.lose_hp == 0
 				invoke SelectObject, member_hdc2, player_right_bitmap
-			.ELSE 
+			.ELSE
 				invoke SelectObject, member_hdc2, player_losehp_right_bitmap
 			.ENDIF
 		.ENDIF
@@ -962,6 +991,7 @@ paintPlayers proc member_hdc1: HDC, member_hdc2:HDC
 	ret
 paintPlayers endp
 
+; ×©¿é»æÖÆº¯Êı
 paintBricks proc uses edi ecx, member_hdc1:HDC, member_hdc2:HDC
 	assume edi:ptr brick
 	.IF game_status == 1
@@ -1006,9 +1036,10 @@ paintScore proc member_hdc:HDC
 	mov rect.top, 30
 	mov rect.bottom, 45
 
+	;mov eax, score
+	;invoke wsprintf, addr scoreStr, addr qwq, eax
 	mov    eax, offset text
 	invoke wsprintf,offset buf,offset text,player1.hp,player1.score
-
 	.ELSEIF game_status == 2
 	mov rect.left,130
 	mov rect.right, 400
@@ -1020,10 +1051,10 @@ paintScore proc member_hdc:HDC
                                        ADDR FontName
     invoke SelectObject, member_hdc, eax
     mov    hfont,eax
-	; è®¾ç½®æ–‡å­—é¢œè‰²
+	; ÉèÖÃÎÄ×ÖÑÕÉ«
     RGB    192,168,255
     invoke SetTextColor,member_hdc,eax
-	; è®¾ç½®èƒŒæ™¯é¢œè‰²
+	 ;ÉèÖÃ±³¾°ÑÕÉ«
     RGB    0,0,24
     invoke SetBkColor,member_hdc,eax
 	mov    eax, offset text
